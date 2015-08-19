@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include "cyclus.h"
+
 struct daughter {
     int name;
     std::vector<double> mass;
