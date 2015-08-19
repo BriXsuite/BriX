@@ -337,6 +337,9 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
   double cycle_length;
 
+  #pragma cyclus var {"userlevel": 0, \
+                      "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
+  std::map blending_constraints;
 
  private:
   bool shutdown;
