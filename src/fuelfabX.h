@@ -6,15 +6,15 @@
 #include "cyclus.h"
 #include "reactor_facility.h"
 
-namespace fuelfab {
+namespace fuelfabX {
 
 
-/// @class FuelfabFacility
+/// @class FuelfabX
 ///
 /// This Facility is intended
 /// as a skeleton to guide the implementation of new Facility
 /// agents.
-/// The FuelfabFacility class inherits from the Facility class and is
+/// The FuelfabX class inherits from the Facility class and is
 /// dynamically loaded by the Agent class when requested.
 ///
 /// @section intro Introduction
@@ -32,11 +32,11 @@ namespace fuelfab {
 /// Place a description of the detailed behavior of the agent. Consider
 /// describing the behavior at the tick and tock as well as the behavior
 /// upon sending and receiving materials and messages.
-class FuelfabFacility : public cyclus::Facility  {
+class FuelfabX : public cyclus::Facility  {
  public:
-  /// Constructor for FuelfabFacility Class
+  /// Constructor for FuelfabX Class
   /// @param ctx the cyclus context for access to simulation-wide parameters
-  explicit FuelfabFacility(cyclus::Context* ctx);
+  explicit FuelfabX(cyclus::Context* ctx);
 
   /// The Prime Directive
   /// Generates code that handles all input file reading and restart operations
@@ -50,14 +50,14 @@ class FuelfabFacility : public cyclus::Facility  {
                               "for the design of new facility agents.",\
 		       "niche": "fuel fabrication"}
 
-    /// A verbose printer for the FuelfabFacility
+    /// A verbose printer for the FuelfabX
     virtual std::string str();
 
-    /// The handleTick function specific to the FuelfabFacility.
+    /// The handleTick function specific to the FuelfabX.
     /// @param time the time of the tick
     virtual void Tick();
 
-    /// The handleTick function specific to the FuelfabFacility.
+    /// The handleTick function specific to the FuelfabX.
     /// @param time the time of the tock
     virtual void Tock();
 

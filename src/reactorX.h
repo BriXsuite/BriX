@@ -8,11 +8,11 @@
 #include "cyclus.h"
 #include "burnupcalc.h"
 
-namespace reactor {
+namespace reactorX {
 
-/// @class ReactorFacility
+/// @class ReactorX
 ///
-/// The ReactorFacility class inherits from the Facility class and is
+/// The ReactorX class inherits from the Facility class and is
 /// dynamically loaded by the Agent class when requested.
 ///
 /// @section intro Introduction
@@ -56,11 +56,11 @@ namespace reactor {
 
 
 
-class ReactorFacility : public cyclus::Facility  {
+class ReactorX : public cyclus::Facility  {
  public:
-  /// Constructor for ReactorFacility Class
+  /// Constructor for ReactorX Class
   /// @param ctx the cyclus context for access to simulation-wide parameters
-  explicit ReactorFacility(cyclus::Context* ctx);
+  explicit ReactorX(cyclus::Context* ctx);
 
   /// The Prime Directive
   /// Generates code that handles all input file reading and restart operations
@@ -74,14 +74,14 @@ class ReactorFacility : public cyclus::Facility  {
                               "for the design of new facility agents.", \
                         "niche": "reactor"}
 
-  /// A verbose printer for the ReactorFacility
+  /// A verbose printer for the ReactorX
   virtual std::string str();
 
-  /// The handleTick function specific to the ReactorFacility.
+  /// The handleTick function specific to the ReactorX.
   /// @param time the time of the tick
   virtual void Tick();
 
-  /// The handleTick function specific to the ReactorFacility.
+  /// The handleTick function specific to the ReactorX.
   /// @param time the time of the tock
   virtual void Tock();
 
@@ -339,7 +339,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"userlevel": 0, \
                       "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
-  std::map blending_constraints;
+  std::map<std::string, double> blending_constraints;
 
  private:
   bool shutdown;

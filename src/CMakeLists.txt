@@ -5,10 +5,10 @@ if(UNIX)
 endif()
 
 # add lib
-ADD_LIBRARY(BriX burnupcalc.cpp origenBuilder.cpp)
-INSTALL(TARGETS BriX
+ADD_LIBRARY(brix burnupcalc.cpp origenBuilder.cpp)
+INSTALL(TARGETS brix
     LIBRARY DESTINATION lib/cyclus
-    COMPONENT BriX
+    COMPONENT brix
     )
 use_cyclus("BriX" "reactor_facility")
 use_cyclus("BriX" "fuelfab_facility")
@@ -17,6 +17,6 @@ use_cyclus("BriX" "reactorX")
 use_cyclus("BriX" "fuelfabX")
 install_cyclus_module("BriX" "")
 TARGET_LINK_LIBRARIES(BriX brix)
-TARGET_LINK_LIBRARIES(BriX_unit_tests brix)
+#TARGET_LINK_LIBRARIES(BriX_unit_tests brix)
 #SET_TARGET_PROPERTIES(BriX brix PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 

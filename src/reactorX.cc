@@ -1,8 +1,8 @@
-#include "reactor_facility.h"
+#include "reactorX.h"
 
-namespace reactor {
+namespace reactorX {
 
-ReactorFacility::ReactorFacility(cyclus::Context* ctx)
+ReactorX::ReactorX(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
       cycle_end_ = ctx->time() + 0;
       start_time_ = cycle_end_;
@@ -11,7 +11,7 @@ ReactorFacility::ReactorFacility(cyclus::Context* ctx)
       record = true;
 };
 
-std::string ReactorFacility::str() {
+std::string ReactorX::str() {
   return Facility::str();
 }
 
@@ -73,8 +73,8 @@ void CompOut(cyclus::Material::Ptr &mat1){
 /** During the first tick for the facilities the reactor libraries are set up and the
 path of all important files is set up. This is general information for the reactor model
 to operate.*/
-void ReactorFacility::Tick() {
-    //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
+void ReactorX::Tick() {
+    //std::cout << "ReactorX inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
     cyclus::Context* ctx = context();
     if(fuel_library_.name.size() == 0){
@@ -168,7 +168,7 @@ void ReactorFacility::Tick() {
 /** During the tock the reactor performs the burnup calculation and determines the availability
 of the reactor for measure both power and outage periods. Additionally Bright-lite specific
 cyclus tables are generated in this timestep. */
-void ReactorFacility::Tock() {
+void ReactorX::Tock() {
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
 
@@ -367,7 +367,7 @@ void ReactorFacility::Tock() {
 }
 
 /** The reactor requests the amount of batches it needs*/
-std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
+std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlRequests() {
     //std::cout << "Getmatlrequests begin" << std::endl;
     using cyclus::RequestPortfolio;
     using cyclus::Material;
@@ -415,7 +415,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 
 /** The reactor will offer either a single batch for a full core load depending on shut down
 condition.*/
-std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBids(
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
   //std::cout << "RX GetMatBid" << std::endl;
   using cyclus::BidPortfolio;
@@ -476,7 +476,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
 }
 
 /** Accepts fuel offered to it*/
-void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
+void ReactorX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
     //std::cout << "RX TRADE START" << std::endl;
     if(shutdown != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
@@ -503,7 +503,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
 }
 
 /** Discharging fuel from the reactor*/
-void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+void ReactorX::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
@@ -531,7 +531,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
 }
 
 /** This function converts a cyclus material point into a Bright-lite batch object. */
-fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
+fuelBundle ReactorX::comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
     //std::cout << "COMP FUNCTION" <<std::endl;
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
@@ -578,7 +578,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
 
 /** Builds a Bright-lite core from the batches existing on the reactor in the fuel
 library.*/
-void ReactorFacility::CoreBuilder(){
+void ReactorX::CoreBuilder(){
     //builds the necessary burnup calculation parameters
     // in fuel_library_
 
@@ -614,7 +614,7 @@ void ReactorFacility::CoreBuilder(){
 /** This functions orders the batches on the first tock. It is done to ensure that the
 incoming batches are ordered by criticality to ensure that the batch with the lowest
 k is discharged first */
-void ReactorFacility::batch_reorder(){
+void ReactorX::batch_reorder(){
 //collapses each batch first, then orders them
 //only needs to be called once per reactor start
 //std::cout << " Begin batch_reorder" << std::endl;
@@ -643,8 +643,8 @@ void ReactorFacility::batch_reorder(){
 }
 
 
-extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
-  return new ReactorFacility(ctx);
+extern "C" cyclus::Agent* ConstructReactorX(cyclus::Context* ctx) {
+  return new ReactorX(ctx);
 }
 
 }

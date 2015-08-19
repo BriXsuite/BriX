@@ -1,13 +1,13 @@
-#include "fuelfab_facility.h"
+#include "fuelfabX.h"
 
-namespace fuelfab {
+namespace fuelfabX {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    FuelfabFacility::FuelfabFacility(cyclus::Context* ctx)
+    FuelfabX::FuelfabX(cyclus::Context* ctx)
         : cyclus::Facility(ctx) {};
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    std::string FuelfabFacility::str() {
+    std::string FuelfabX::str() {
       return Facility::str();
     }
     /** CompOut prints out the ID and mass of each isotope in a cyclue material. */
@@ -23,7 +23,7 @@ namespace fuelfab {
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    void FuelfabFacility::Tick() {
+    void FuelfabX::Tick() {
         /** On the first tick the fuel fabrication facility will set up its inventories
         and give those inventories a capacity. Additionally there is some debugging code
         to check the size of each inventory inside of the fuel fabrication plant.*/
@@ -59,11 +59,11 @@ namespace fuelfab {
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    void FuelfabFacility::Tock() {
+    void FuelfabX::Tock() {
         /** The fuel fabrication plant performs no functions on the tock */
     }
 
-    std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelfabFacility::GetMatlRequests() {
+    std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelfabX::GetMatlRequests() {
         /** During material requests the fuel fabrication plant  first requests new fuel from the fissile
         stream, then new fuel from the non-fissile stream, finally it requests fuel from the additional streams
         in incommods*/
@@ -110,7 +110,7 @@ namespace fuelfab {
     /** During get material bids the fuel fabrication plant recieves bid from all facilities requesting material from it.
     All Bright-lite reactors tell the fuel fabrication plant what type of fuel they need and how many batches of fuel,
     all other types of facilities are rejected*/
-    std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabFacility::GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
+    std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabX::GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
         using cyclus::BidPortfolio;
         using cyclus::CapacityConstraint;
         using cyclus::Converter;
@@ -165,7 +165,7 @@ namespace fuelfab {
     }
 
     /** During accept material trades cyclus materials are added ot the fuel fabrication plants inventories*/
-    void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
+    void FuelfabX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
         //std::cout << "ff TRADE start" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
@@ -190,7 +190,7 @@ namespace fuelfab {
 
     /** Get material trades uses the steady state enrichment determined by the reactor to discover
     the build new batches of material to send to the reactor.*/
-    void FuelfabFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+    void FuelfabX::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
                                         std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses) {
         using cyclus::Material;
@@ -221,8 +221,8 @@ namespace fuelfab {
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    extern "C" cyclus::Agent* ConstructFuelfabFacility(cyclus::Context* ctx) {
-        return new FuelfabFacility(ctx);
+    extern "C" cyclus::Agent* ConstructFuelfabX(cyclus::Context* ctx) {
+        return new FuelfabX(ctx);
     }
 
 }
