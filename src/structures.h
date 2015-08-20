@@ -13,12 +13,43 @@ struct Daughter {
 
 struct IsoInfo {
     unsigned int name;          // Nucid
-    float fraction;    // Fraction of this isotope in the inherited class
+    float fraction;             // Fraction of this isotope in the inherited class
     std::vector<float> neutron_prod;
     std::vector<float> neutron_dest;
-    std::vector<float> BU; //total BU
+    std::vector<float> BU;      //total BU
     std::vector<float> fluence;
+    std::vector<float> fission_products; // Fission product lump mass
     std::vector<Daughter> iso_vector;
+};
+
+struct nonActinide {
+    int name;
+    float sng;
+    float scattering;
+    float sn2n;
+    float snp;
+    float sngx;
+    float sn2nx;
+    float yyn;
+    float total_prod;
+    float total_dest;
+};
+
+// Thermal disadvantage factor parameters for a given region
+struct DisadvParams {
+    float a;            // Fuel radius [cm]
+    float b;            // Moderator radius [cm]
+    float mod_Siga;     // Moderator Sig a
+    float mod_Sigs;     // Mod Sig s
+    float fuel_Sigs;    // Fuel Sig s
+};
+
+// Spatial flux calculation parameters for a given region
+struct SpatialParams {
+    float region_area;  // Total area of the region in [cm2]
+    float Sig_a;        // Macroscopic absorption  cross section [cm-1]
+    float Sig_tr;       // Macroscopic transport cross section [cm-1]
+    float nuSig_f;      // Macroscopic fission cross section times nu [cm-1]
 };
 
 struct LibInfo {
@@ -39,28 +70,25 @@ struct LibInfo {
 // Information about the fuel region
 class RegionInfo {
 public:
-    RegionInfo();
-
     float mass_;             // Mass of region
     float area_;             // Area of region [cm2]
 
-    float nonf_prod_;        // Non-fuel material neutron prod
-    float nonf_dest_;        // Non-fuel material neutron dest
+    float struct_prod_;      // Non-fuel material neutron prod
+    float struct_dest_;      // Non-fuel material neutron dest
 
     IsoInfo iso;             // Collapsed, isoinfo for region
+    SpatialParams spatial_;  // Spatial flux calculation info
+    DisadvParams disadv_;    // DA calculation parameters
 
     unsigned int location_;  // Radial location of region, 1:center
 
     float fluence_ = 0;      // Fluence of this region
     float rflux_;            // Relative flux of region
 
-
 };
 
 class ReactorLiteInfo {
 public:
-    ReactorLiteInfo();
-
     // Initialized during startup
     unsigned int regions_;  // Total number of regions/batches
     float power_;           // Reactor thermal power [MWth]
@@ -68,8 +96,6 @@ public:
     float target_BU_ = 0;   // Target burnup in [MWd/kgIHM]
     float target_CR_ = 0;   // Target conversion ratio
     float pnl;              // Nonleakage probability
-    float CR_upper;         // Max mass number for CR fission product calc
-    float CR_lower;         // Min mass number for CR calc
 
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
