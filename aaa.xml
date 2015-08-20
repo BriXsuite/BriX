@@ -1,0 +1,45 @@
+<!-- 
+Test input for ReactorLite
+
+-->
+
+<simulation>
+  <control>
+    <duration>5</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>BriX</lib><name>ReactorLite</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+
+  <facility>
+    <name>BriX_ReactorLite</name>
+    <config>
+      <ReactorLite>
+        <tolerance>1</tolerance>
+      </ReactorLite>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>    
+        <entry>
+          <prototype>BriX_ReactorLite</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+
+</simulation>
