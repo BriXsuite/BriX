@@ -5,14 +5,15 @@ if(UNIX)
 endif()
 
 # add lib
-#ADD_LIBRARY(brix)
-#INSTALL(TARGETS brix
-#    LIBRARY DESTINATION lib/cyclus
-#    COMPONENT brix
-#    )
+ADD_LIBRARY(brix structures.cc)
+INSTALL(TARGETS brix
+    LIBRARY DESTINATION lib/cyclus
+    COMPONENT brix
+    )
 use_cyclus("BriX" "ReactorLite")
 install_cyclus_module("BriX" "")
-#TARGET_LINK_LIBRARIES(BriX brix)
+TARGET_LINK_LIBRARIES(BriX brix)
 #TARGET_LINK_LIBRARIES(BriX_unit_tests brix)
 #SET_TARGET_PROPERTIES(BriX brix PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 
+INSTALL_CYCLUS_STANDALONE("ReactorLite" "ReactorLite" "BriX")

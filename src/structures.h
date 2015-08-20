@@ -5,126 +5,84 @@
 
 #include "cyclus.h"
 
-struct daughter {
-    int name;
-    std::vector<double> mass;
-    double fraction;
+struct Daughter {
+    unsigned int name;
+    std::vector<float> mass;
+    float fraction;
 };
 
-struct isoInformation {
-    int name; //changed this to int so it contains nucid
-    int region;
-    std::string type;
-    bool blending;
-    //double fraction;
-    bool fuel;
-    double batch_fluence;
-    double batch_BU;
-    double base_power;
-    double base_mass;
-    double base_flux;
-    double fraction; //fraction of this isotope in the batch/stream
-    double sigs;
-    double siga;
-    std::vector<double> neutron_prod;
-    std::vector<double> neutron_dest;
-    std::vector<double> k_inf;
-    std::vector<double> BUd;
-    std::vector<double> BU; //total BU
-    std::vector<double> fluence;
-    std::vector<daughter> iso_vector;
+struct IsoInfo {
+    unsigned int name;          // Nucid
+    float fraction;    // Fraction of this isotope in the inherited class
+    std::vector<float> neutron_prod;
+    std::vector<float> neutron_dest;
+    std::vector<float> BU; //total BU
+    std::vector<float> fluence;
+    std::vector<Daughter> iso_vector;
 };
 
-struct nonActinide {
-    int name;
-    double sng;
-    double scattering;
-    double sn2n;
-    double snp;
-    double sngx;
-    double sn2nx;
-    double yyn;
-    double total_prod;
-    double total_dest;
+struct LibInfo {
+    std::string name;               // Matches library in folder
+
+    // Parameters used in library database generation if available
+    float lib_flux;        // Flux in [n/cm2]
+    float lib_res_t;       // Fuel residence time [day]
+    float lib_power;       // Power in [MW(th)]
+    float lib_mass;        // Mass in [kg]
+    float lib_BU;          // Burnup in [MWd/kgIHM]
+    float lib_CR;          // Conversion ratio
+
+    std::vector<IsoInfo> all_iso;   // All iso's in the library go here
+    float fraction;        // Fraction of this library in core region
 };
 
-struct interpol_pair {
-    std::string metric;
-    double value;
-    double scaled_value;
+// Information about the fuel region
+class RegionInfo {
+public:
+    RegionInfo();
+
+    float mass_;             // Mass of region
+    float area_;             // Area of region [cm2]
+
+    float nonf_prod_;        // Non-fuel material neutron prod
+    float nonf_dest_;        // Non-fuel material neutron dest
+
+    IsoInfo iso;             // Collapsed, isoinfo for region
+
+    unsigned int location_;  // Radial location of region, 1:center
+
+    float fluence_ = 0;      // Fluence of this region
+    float rflux_;            // Relative flux of region
+
+
 };
 
-struct batch_info {
-    std::string name;
-    double batch_fluence; //fluence at the end of cycle, not used during burnup/composition calc
-    std::vector<double> fraction; //blending fraction
-    std::vector<isoInformation> iso;
-    double batch_area; //[cm2] the total area of the batch for cylindrical flux calc
-    isoInformation collapsed_iso;
-    double BUg; //burnup guess, used during burnup/composition calc
-    double Fg; //fluence guess, used during burnup/composition calc
-    double rflux; //relative flux of batch
-    double DA; //thermal disadvantage, phi_M/phi_F
-    double discharge_BU; //the discharge burnup of the batch
-    double delta_BU; // used to calculate the cycle length change in BU between cycles
-    double discharge_CR; //the discharge conversion ratio
-    std::map<int, double> comp; //current composition of batch at this batch_fluence
-    double return_BU(){
-        int ii;
-        for(ii = 0; collapsed_iso.fluence[ii] <= Fg; ii++){}
-        if(ii == 0){return 0;}
-        return collapsed_iso.BU[ii-1] + ((collapsed_iso.BU[ii]-collapsed_iso.BU[ii-1])*
-            (Fg - collapsed_iso.fluence[ii-1])/(collapsed_iso.fluence[ii] - collapsed_iso.fluence[ii-1]));
-    }
-};
+class ReactorLiteInfo {
+public:
+    ReactorLiteInfo();
 
-struct fuelBundle {
-    std::string name;
-    std::string operation_type;
-    int tot_batch;
-    bool libcheck;
-    double pnl; //leakage
-    double tres; //residence time
-    double base_flux; // reactor library database average flux
-    double base_power; // reactor thermal power
-    double base_mass; // reactor  core mass (all batches)
-    double target_BU; //target discharge burnup, used for first guess in burnupcalc
-    double fuel_area; //[cm2] the total area of the fuel for cylindrical flux calc
-    double cylindrical_delta; //the increment used in cylindrical flux calc
-    double mod_Sig_a; //Macroscopic absorption  cross section of the moderator
-    double mod_Sig_tr; //Macroscopic transport cross section of the moderator
-    double mod_Sig_f; //Macroscopic fission cross section of the moderator
-    double mod_thickness; //radial thickness of the moderator [cm]
-    double fuel_Sig_tr; //transport cs of the fuel
-    double fuel_radius;
-    double moderator_radius;
-    double moderator_sigs;
-    double moderator_siga;
-    double disadv_a; //disadvantage calc fuel rad
-    double disadv_b; //disadvantage calc mod rad
-    double disadv_mod_siga; //disadvantage calc moderator Sig a
-    double disadv_mod_sigs; //disadvantage calc mod Sig s
-    double disadv_fuel_sigs; //disadvantage calc fuel Sig s
-    double struct_prod; //neutron production rate of structural materials
-    double struct_dest; //neutron destruction rate of structural materials
-    double CR_upper; // max mass number for CR fission product calculation
-    double CR_lower; // min mass number for CR fission product calculation
-    double CR_target; //target CR value
-    double CR; //current conversion ratio
-    double SS_tolerance; //convergence tolerance for the code
-    std::vector<int> CR_fissile; //list of fissile isotopes that are tracked for CR calc
-    std::vector<batch_info> batch;
-    std::vector<isoInformation> all_iso; //change to manifest
-    std::vector<interpol_pair> interpol_pairs;
-    std::vector<std::string> interpol_libs;
-    std::vector<double> stream_fraction;
-};
+    // Initialized during startup
+    unsigned int regions_;  // Total number of regions/batches
+    float power_;           // Reactor thermal power [MWth]
+    float core_mass_;       // Total mass of all fuel in [kg]
+    float target_BU_ = 0;   // Target burnup in [MWd/kgIHM]
+    float target_CR_ = 0;   // Target conversion ratio
+    float pnl;              // Nonleakage probability
+    float CR_upper;         // Max mass number for CR fission product calc
+    float CR_lower;         // Min mass number for CR calc
 
-struct fuelInfo{
-    double fluence;
-    double burnup;
-    std::map<int, double> burnup_info;
-};
+    // Regions are populated based on reactor parameters
+    std::vector<RegionInfo> region;
 
+
+
+};
 
 #endif // STRUCTURES_H_INCLUDED
+
+
+
+
+
+
+
