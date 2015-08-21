@@ -5,6 +5,7 @@
 
 #include "cyclus.h"
 
+
 struct Daughter {
     unsigned int name;
     std::vector<float> mass;

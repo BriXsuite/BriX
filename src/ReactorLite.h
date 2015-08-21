@@ -5,7 +5,9 @@
 #include <sstream>
 #include <cmath>
 
-#include "structures.h"
+
+#include "cyclus.h"
+#include "librarytools.h"
 
 namespace reactorlite {
 
@@ -144,7 +146,7 @@ public:
 private:
     ReactorLiteInfo reactor_core_;
     bool shutdown = false;
-
+    bla blavar;
 
 };
 

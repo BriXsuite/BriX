@@ -14,7 +14,10 @@ std::string ReactorLite::str() {
 void ReactorLite::Tick() {
     // Skip if reactor shutdown or there is data
     if (shutdown == true | reactor_core_.region.size() != 0) {return;}
-
+    LibInfo temp_lib;
+    //LibraryReader(cyclus::Env::GetInstallPath() + "/share/brightlite/libraries/" + \
+                          libraries[0] + "/manifest.txt", temp_lib);
+    test_funcc(565623);
 
 
 }
