@@ -32,13 +32,10 @@ void ReactorLite::Tick() {
         target_burnup << std::endl;
     }
 
-    std::cout << "start time: " << start_time_ << std::endl;
-
     LibInfo temp_lib;
 
-    LibraryReader(cyclus::Env::GetInstallPath() + "/share/brightlite/libraries/" + \
-                          libraries[0] + "/manifest.txt", temp_lib);
-    //test_funcc(563);
+    LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
+                          + libraries[0] + "/manifest.txt", temp_lib);
 
 
 }
