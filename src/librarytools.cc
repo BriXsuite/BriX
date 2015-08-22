@@ -2,14 +2,13 @@
 
 
 void LibraryReader(std::string library_path, LibInfo &library){
-    library.lib_BU = 5;
+    std::cout << "Library reader begin. Path:" << library_path << std::endl;
 
-    std::cout << "library reader!" << std::endl;
+    std::ifstream inf(library_path); // Opens manifest file
 
-}
+    std::string line;
+    std::string iso_name;
 
+    library.name = libraries[0]; //for now only one entry in here
 
-
-void test_func1(int i){
-std::cout << "library reader! " << i << std::endl;
 }

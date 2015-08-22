@@ -3,7 +3,11 @@
 namespace reactorlite {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ReactorLite::ReactorLite(cyclus::Context* ctx) : cyclus::Facility(ctx) {}
+ReactorLite::ReactorLite(cyclus::Context* ctx) : cyclus::Facility(ctx) {
+    start_time_ = ctx->time();  // Start time is the current time
+    cycle_end_ = start_time_;   // First cycle happens at the start time
+
+}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 std::string ReactorLite::str() {
@@ -12,11 +16,27 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
-    // Skip if reactor shutdown or there is data
-    if (shutdown == true | reactor_core_.region.size() != 0) {return;}
+    cyclus::Context* ctx = context();
+    // Return if this is not the first tick
+    if (start_time_ != ctx->time()) {return;}
+
+    // First tick
+
+    // Inform user reactor is starting up
+    if(target_burnup == 0){
+        std::cout << ctx->time()<< " New ReactorLite " << libraries[0] <<
+        " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
+    } else {
+        std::cout << ctx->time() << " New ReactorLite " << libraries[0] <<
+        " reactor (ID:" << id() << ") starting up - target burnup = " <<
+        target_burnup << std::endl;
+    }
+
+    std::cout << "start time: " << start_time_ << std::endl;
+
     LibInfo temp_lib;
 
-    //LibraryReader(cyclus::Env::GetInstallPath() + "/share/brightlite/libraries/" + \
+    LibraryReader(cyclus::Env::GetInstallPath() + "/share/brightlite/libraries/" + \
                           libraries[0] + "/manifest.txt", temp_lib);
     //test_funcc(563);
 
@@ -26,7 +46,6 @@ void ReactorLite::Tick() {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
 
-    test_func1(3);
 }
 
 

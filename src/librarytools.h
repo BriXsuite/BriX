@@ -7,13 +7,6 @@
 
 #include "structures.h"
 
-struct bla{
-    int one;
-    int two;
-};
-
 void LibraryReader(std::string library_path, LibInfo &library);
-
-void test_func1(int i);
 
 #endif // LIBRARYTOOLS_H

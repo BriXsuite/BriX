@@ -143,9 +143,10 @@ public:
 
 
 private:
-    ReactorLiteInfo reactor_core_;
-    bool shutdown = false;
-    bla blavar;
+    ReactorLiteInfo reactor_core_;      // Class that holds core info on reactor
+    bool shutdown = false;              // State of the reactor
+    int cycle_end_;                     // Reactor cycle end time
+    int start_time_;                    // Reactor start time
 
 };
 
