@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cmath>
 
-
 #include "cyclus.h"
 #include "librarytools.h"
 
