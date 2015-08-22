@@ -126,6 +126,7 @@ public:
                       "units": "MWd/kgIHM"}
     double target_burnup;
 
+
     #pragma cyclus var {"units": "MWe", \
                       "userlevel": 0, \
                       "tooltip": "Electrical production."}

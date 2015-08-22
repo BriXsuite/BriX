@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "structures.h"
+#include "generaltools.h"
 
 using namespace std;
 

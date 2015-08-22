@@ -5,7 +5,7 @@ if(UNIX)
 endif()
 
 # add lib
-ADD_LIBRARY(brix librarytools.cc)
+ADD_LIBRARY(brix librarytools.cc generaltools.cc)
 INSTALL(TARGETS brix
     LIBRARY DESTINATION lib/cyclus
     COMPONENT brix

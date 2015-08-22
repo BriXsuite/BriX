@@ -16,6 +16,7 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
+    std::cout << "tick" << std::endl;
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if (start_time_ != ctx->time()) {return;}
@@ -33,9 +34,24 @@ void ReactorLite::Tick() {
     }
 
     LibInfo temp_lib;
-
+std::cout << "ablbala" << std::endl;
     LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
-                          + libraries[0] + "/manifest.txt", temp_lib);
+                          + libraries[0], temp_lib);
+
+    /// Library blending goes here, start by checking if libraries.size() > 1
+
+    /// Records relevant user data in reactor_core_
+    std::cout << "blbala" << std::endl;
+    /*
+    reactor_core_.regions_ = regions;
+    reactor_core_.power_ = generated_power;
+    reactor_core_.core_mass_ = core_mass;
+    reactor_core_.target_BU_ = target_burnup;
+    reactor_core_.target_CR_ = target_CR;
+    reactor_core_.pnl = nonleakage;
+*/
+    // Regions are populated based on reactor parameters
+    std::vector<RegionInfo> region;
 
 
 }
