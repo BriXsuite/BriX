@@ -21,10 +21,10 @@ void ReactorLite::Tick() {
     // Return if this is not the first tick
     if (start_time_ != ctx->time()) {return;}
 
-    // First tick
+    // First tick, the rest of Tick() is like a constructor
 
     // Inform user reactor is starting up
-    if(target_burnup == 0){
+    if (target_burnup == 0) {
         std::cout << ctx->time()<< " New ReactorLite " << libraries[0] <<
         " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
     } else {
@@ -34,24 +34,42 @@ void ReactorLite::Tick() {
     }
 
     LibInfo temp_lib;
-std::cout << "ablbala" << std::endl;
     LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
                           + libraries[0], temp_lib);
 
     /// Library blending goes here, start by checking if libraries.size() > 1
 
-    /// Records relevant user data in reactor_core_
-    std::cout << "blbala" << std::endl;
-    /*
+    // Record relevant user data in reactor_core_
     reactor_core_.regions_ = regions;
     reactor_core_.power_ = generated_power;
     reactor_core_.core_mass_ = core_mass;
     reactor_core_.target_BU_ = target_burnup;
     reactor_core_.target_CR_ = target_CR;
     reactor_core_.pnl = nonleakage;
-*/
+    reactor_core_.fluence_timestep_ = fluence_timestep;
+    reactor_core_.flux_mode_ = flux_mode;
+
     // Regions are populated based on reactor parameters
-    std::vector<RegionInfo> region;
+    RegionInfo region;
+
+    for (int i = 0; i < regions; i++) {
+        // ReactorLite has regions of equal mass
+        region.mass_ = core_mass/regions;
+
+        ///TODO calculate and assign struct here
+
+        reactor_core_.region.push_back(region);
+    }
+
+    if (flux_mode == 2) {
+        reactor_core_.spatial_.delta = spatial_delta;
+        reactor_core_.spatial_.fuel_area = spatial_area;
+        reactor_core_.spatial_.spatial_mod_thickness = spatial_mod_thickness;
+        reactor_core_.spatial_.spatial_mod_Sig_f = spatial_mod_Sig_f;
+        reactor_core_.spatial_.spatial_mod_Sig_tr = spatial_mod_Sig_tr;
+        reactor_core_.spatial_.spatial_mod_Sig_a = spatial_mod_Sig_a;
+        reactor_core_.spatial_.spatial_fuel_Sig_tr = spatial_fuel_Sig_tr;
+    }
 
 
 }

@@ -81,6 +81,8 @@ public:
     /// @param time the time of the tock
     virtual void Tock();
 
+
+    /** General Reactor Parameters **/
     #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
                       "schematype": "token", \
@@ -112,35 +114,96 @@ public:
                       "doc": "Varies from 0 - 1.", \
                       "userlevel": 1, \
                       "default": 0.98}
-    double nonleakage;
+    float nonleakage;
 
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \
                       "tooltip": "reactor maximum inventory size", \
                       "doc": "total maximum inventory size of the reactor"}
-    double max_inv_size;
+    float max_inv_size;
 
-    #pragma cyclus var {"tooltip": "Target burnup, if reactor in forward mode", \
+    #pragma cyclus var {"tooltip": "Target burnup, set to zero for forward mode", \
                       "default": 0, \
                       "userlevel": 0, \
                       "units": "MWd/kgIHM"}
-    double target_burnup;
+    float target_burnup;
 
+    #pragma cyclus var {"tooltip": "Target conversion ratio, set to zero for forward mode", \
+                      "default": 0, \
+                      "userlevel": 0, \
+                      "units": "MWd/kgIHM"}
+    float target_CR;
 
     #pragma cyclus var {"units": "MWe", \
                       "userlevel": 0, \
                       "tooltip": "Electrical production."}
-    double generated_power;
+    float generated_power;
 
     #pragma cyclus var {"units": "kgIHM", \
                       "userlevel": 0, \
                       "tooltip": "Total mass of the core."}
-    double core_mass;
+    float core_mass;
 
     #pragma cyclus var {"default": 0.33, \
                       "userlevel": 2, \
                       "tooltip": "Thermal to electric conversion rate."}
-    double thermal_efficiency;
+    float thermal_efficiency;
+
+    #pragma cyclus var {"default": 10, \
+                      "userlevel": 2, \
+                      "tooltip": "Timestep [days] for the burnup calculation fluence progression."}
+    float fluence_timestep;
+
+    #pragma cyclus var {"default": 0, \
+                      "userlevel": 2, \
+                      "tooltip": "Flux calculation method. 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial"}
+    int flux_mode;
+
+
+
+    /** Spatial Method Parameters **/
+    #pragma cyclus var {"default": 5, \
+                      "userlevel": 3, \
+                      "tooltip": "Delta to be used for cylindrical flux calculation."}
+    float spatial_delta;
+
+    #pragma cyclus var {"default": 4197, \
+                      "units": "cm2", \
+                      "userlevel": 3, \
+                      "tooltip": "Total area of the fuel (not including moderator) in core. Used for spatial flux calculation."}
+    float spatial_area;
+
+    #pragma cyclus var {"default": 50, \
+                      "units": "cm", \
+                      "userlevel": 3, \
+                      "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation. Used for spatial flux calculation."}
+    float spatial_mod_thickness;
+
+    #pragma cyclus var {"default": 0.0, \
+                      "units": "cm-1", \
+                      "userlevel": 3, \
+                      "tooltip": "Macroscopic fission cross section of the moderator. Used for spatial flux calculation."}
+    float spatial_mod_Sig_f;
+
+    #pragma cyclus var {"default": 3.46, \
+                      "units": "cm-1", \
+                      "userlevel": 3, \
+                      "tooltip": "Macroscopic transport cross section of the moderator. Used for spatial flux calculation."}
+    float spatial_mod_Sig_tr;
+
+    #pragma cyclus var {"default": 0.0222, \
+                      "units": "cm-1", \
+                      "userlevel": 3, \
+                      "tooltip": "Macroscopic absorption cross section of the moderator. Used for spatial flux calculation."}
+    float spatial_mod_Sig_a;
+
+    #pragma cyclus var {"default": 0.12, \
+                      "units": "cm-1", \
+                      "userlevel": 3, \
+                      "tooltip": "Macroscopic transport cross section of the fuel. Used for spatial flux calculation."}
+    float spatial_fuel_Sig_tr;
+
+
 
 
 private:

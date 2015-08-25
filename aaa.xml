@@ -30,6 +30,7 @@ Test input for ReactorLite
         </libraries>
         <generated_power>1000</generated_power>
         <core_mass>20000</core_mass>
+	<flux_mode>2</flux_mode>
       </ReactorLite>
     </config>
   </facility>

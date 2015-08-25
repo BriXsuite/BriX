@@ -46,11 +46,24 @@ struct DisadvParams {
 };
 
 // Spatial flux calculation parameters for a given region
-struct SpatialParams {
+struct SpatialParamsX {
     float region_area;  // Total area of the region in [cm2]
     float Sig_a;        // Macroscopic absorption  cross section [cm-1]
     float Sig_tr;       // Macroscopic transport cross section [cm-1]
     float nuSig_f;      // Macroscopic fission cross section times nu [cm-1]
+};
+
+// Spatial flux calculation parameters for a given region
+struct SpatialParamsLite {
+    float delta;                // [cm]
+    float fuel_area;            // Total area of the region in [cm2]
+    float spatial_mod_thickness;// [cm]
+
+    // All cross-sections in [cm]
+    float spatial_mod_Sig_a;
+    float spatial_mod_Sig_tr;
+    float spatial_mod_Sig_f;
+    float spatial_fuel_Sig_tr;
 };
 
 struct LibInfo {
@@ -72,13 +85,11 @@ struct LibInfo {
 class RegionInfo {
 public:
     float mass_;             // Mass of region
-    float area_;             // Area of region [cm2]
 
     float struct_prod_;      // Non-fuel material neutron prod
     float struct_dest_;      // Non-fuel material neutron dest
 
-    IsoInfo iso;             // Collapsed, isoinfo for region
-    SpatialParams spatial_;  // Spatial flux calculation info
+    IsoInfo iso;                 // Collapsed, isoinfo for region
     DisadvParams disadv_;    // DA calculation parameters
 
     unsigned int location_;  // Radial location of region, 1:center
@@ -94,9 +105,16 @@ public:
     unsigned int regions_;  // Total number of regions/batches
     float power_;           // Reactor thermal power [MWth]
     float core_mass_;       // Total mass of all fuel in [kg]
-    float target_BU_;   // Target burnup in [MWd/kgIHM]
-    float target_CR_;   // Target conversion ratio
+    float target_BU_;       // Target burnup in [MWd/kgIHM]
+    float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
+
+    int flux_mode_;         // Flux calculation mode:
+    // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
+
+    SpatialParamsLite spatial_;  // Spatial flux calculation info
+
+    float fluence_timestep_; // Fluence propagation time step [day]
 
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
