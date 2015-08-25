@@ -55,8 +55,6 @@ void ReactorLite::Tick() {
         // ReactorLite has regions of equal mass
         region.mass_ = core_mass/regions;
 
-        ///TODO calculate and assign struct here
-
         reactor_core_.region.push_back(region);
     }
 

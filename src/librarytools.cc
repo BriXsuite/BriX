@@ -130,7 +130,7 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest) {
     string line, library, iso;
     nonActinide x_sections;                         // This stores tape9 cross-sections
     vector<nonActinide> nonActinides;           // This stores isotope compositions
-    double sng, sn2n, sna, snp, sngx, sn2nx, yyn;
+    float sng, sn2n, sna, snp, sngx, sn2nx, yyn;
 
     // Read the TAPE9 file for cross sections
     while (getline(tape9_file, line)) {
