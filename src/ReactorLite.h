@@ -204,6 +204,41 @@ public:
     float spatial_fuel_Sig_tr;
 
 
+    /** Fuel Disadvantage Factor (DA) Calculation Parameters **/
+    #pragma cyclus var {"default": 0, \
+                  "userlevel": 2, \
+                  "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
+    int DA_mode;
+
+    #pragma cyclus var {"default": 0.4095, \
+                 "units": "cm", \
+                  "userlevel": 3, \
+                 "tooltip": "Fuel pin radius [cm] used for thermal disadvantage calculation."}
+    float DA_a;
+
+    #pragma cyclus var {"default": 0.70749, \
+                 "units": "cm", \
+                  "userlevel": 3, \
+                 "tooltip": "Moderator radius [cm] used for thermal disadvantage calculation."}
+    float DA_b;
+
+    #pragma cyclus var {"default": 0.222, \
+                 "units": "cm-1", \
+                  "userlevel": 3, \
+                 "tooltip": "Moderator macroscopic abs cross-section for thermal disadvantage calculation."}
+    float DA_mod_Sig_a;
+
+    #pragma cyclus var {"default": 3.44, \
+                 "units": "cm-1", \
+                  "userlevel": 3, \
+                 "tooltip": "Moderator macroscopic scattering cross-section for thermal disadvantage calculation."}
+    float DA_mod_Sig_s;
+
+    #pragma cyclus var {"default": 0.43, \
+                 "units": "cm-1", \
+                  "userlevel": 3, \
+                 "tooltip": "Fuel macroscopic scattering cross-section for thermal disadvantage calculation."}
+    float DA_fuel_Sig_s;
 
 
 private:

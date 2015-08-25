@@ -40,9 +40,9 @@ struct nonActinide {
 struct DisadvParams {
     float a;            // Fuel radius [cm]
     float b;            // Moderator radius [cm]
-    float mod_Siga;     // Moderator Sig a
-    float mod_Sigs;     // Mod Sig s
-    float fuel_Sigs;    // Fuel Sig s
+    float mod_Sig_a;     // Moderator Sig a
+    float mod_Sig_s;     // Mod Sig s
+    float fuel_Sig_s;    // Fuel Sig s
 };
 
 // Spatial flux calculation parameters for a given region
@@ -90,7 +90,6 @@ public:
     float struct_dest_;      // Non-fuel material neutron dest
 
     IsoInfo iso;                 // Collapsed, isoinfo for region
-    DisadvParams disadv_;    // DA calculation parameters
 
     unsigned int location_;  // Radial location of region, 1:center
 
@@ -112,7 +111,8 @@ public:
     int flux_mode_;         // Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
 
-    SpatialParamsLite spatial_;  // Spatial flux calculation info
+    SpatialParamsLite spatial_; // Spatial flux calculation parameters
+    DisadvParams DA_;           // DA calculation parameters
 
     float fluence_timestep_; // Fluence propagation time step [day]
 

@@ -61,6 +61,7 @@ void ReactorLite::Tick() {
         reactor_core_.region.push_back(region);
     }
 
+    // Add spatial calculation parameters
     if (flux_mode == 2) {
         reactor_core_.spatial_.delta = spatial_delta;
         reactor_core_.spatial_.fuel_area = spatial_area;
@@ -71,6 +72,14 @@ void ReactorLite::Tick() {
         reactor_core_.spatial_.spatial_fuel_Sig_tr = spatial_fuel_Sig_tr;
     }
 
+    // Add disadvantage factor calculation parameters
+    if (DA_mode == 1) {
+        reactor_core_.DA_.a = DA_a;
+        reactor_core_.DA_.b = DA_b;
+        reactor_core_.DA_.mod_Sig_a = DA_mod_Sig_a;
+        reactor_core_.DA_.mod_Sig_s = DA_mod_Sig_s;
+        reactor_core_.DA_.fuel_Sig_s = DA_fuel_Sig_s;
+    }
 
 }
 

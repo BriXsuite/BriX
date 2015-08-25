@@ -31,6 +31,7 @@ Test input for ReactorLite
         <generated_power>1000</generated_power>
         <core_mass>20000</core_mass>
 	<flux_mode>2</flux_mode>
+	<DA_mode>1</DA_mode>
       </ReactorLite>
     </config>
   </facility>
