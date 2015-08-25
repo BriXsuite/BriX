@@ -92,6 +92,7 @@ public:
 
     float fluence_ = 0;      // Fluence of this region
     float rflux_ = 1;            // Relative flux of region
+    float DA = 1;
 
 };
 

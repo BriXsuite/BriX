@@ -11,11 +11,23 @@ Test input for ReactorLite
   </control>
 
   <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
     <spec><lib>BriX</lib><name>ReactorLite</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
   </archetypes>
 
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>fuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+	<capacity>50000</capacity>
+      </Source>
+    </config>
+  </facility>
 
   <facility>
     <name>BriX_ReactorLite</name>
@@ -47,10 +59,26 @@ Test input for ReactorLite
           <prototype>BriX_ReactorLite</prototype>
           <number>1</number>
         </entry>
+        <entry>
+          <prototype>Source1</prototype>
+          <number>1</number>
+        </entry> 
       </initialfacilitylist>
       <config> <NullInst/> </config>
     </institution>
   </region>
 
+  <recipe>
+    <name>commod_recipe1</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>1.5</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>98.5</comp>
+    </nuclide>
+  </recipe>
 
 </simulation>
