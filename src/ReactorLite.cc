@@ -16,7 +16,6 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
-    std::cout << "tick" << std::endl;
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if (start_time_ != ctx->time()) {return;}
@@ -60,6 +59,10 @@ void ReactorLite::Tick() {
 
         reactor_core_.region.push_back(region);
     }
+
+    // Add structural material info
+    StructReader(cyclus::Env::GetInstallPath() + "/share/brix/libraries/" + libraries[0],
+                 reactor_core_.struct_prod_, reactor_core_.struct_dest_);
 
     // Add spatial calculation parameters
     if (flux_mode == 2) {

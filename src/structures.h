@@ -84,17 +84,14 @@ struct LibInfo {
 // Information about the fuel region
 class RegionInfo {
 public:
-    float mass_;             // Mass of region
+    float mass_;             // Mass of region, gets assigned at first tick
 
-    float struct_prod_;      // Non-fuel material neutron prod
-    float struct_dest_;      // Non-fuel material neutron dest
-
-    IsoInfo iso;                 // Collapsed, isoinfo for region
+    IsoInfo iso;             // Collapsed, isoinfo for region
 
     unsigned int location_;  // Radial location of region, 1:center
 
     float fluence_ = 0;      // Fluence of this region
-    float rflux_;            // Relative flux of region
+    float rflux_ = 1;            // Relative flux of region
 
 };
 
@@ -108,11 +105,14 @@ public:
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
 
-    int flux_mode_;         // Flux calculation mode:
+    unsigned int flux_mode_;         // Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
 
     SpatialParamsLite spatial_; // Spatial flux calculation parameters
     DisadvParams DA_;           // DA calculation parameters
+
+    float struct_prod_ = 0;  // Non-fuel material neutron prod
+    float struct_dest_ = 0;  // Non-fuel material neutron dest
 
     float fluence_timestep_; // Fluence propagation time step [day]
 
