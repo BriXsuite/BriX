@@ -82,7 +82,8 @@ public:
     virtual void Tock();
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
-
+    void AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
+                                        cyclus::Material::Ptr> >& responses);
 
     /** General Reactor Parameters **/
     #pragma cyclus var {"tooltip": "input commodity", \

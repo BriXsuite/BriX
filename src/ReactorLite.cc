@@ -85,7 +85,7 @@ void ReactorLite::Tick() {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
-
+    std::cout << "Inventory: " << inventory.quantity() << std::endl;
 }
 
 // The reactor requests the amount of batches it needs
@@ -146,6 +146,35 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
 
     return ports;
 }
+
+
+// Accept fuel offered
+void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
+                                        cyclus::Material::Ptr> >& responses) {
+
+    if(shutdown_ != true){
+        std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
+        cyclus::Composition::Ptr compost;
+
+        if(target_burnup == 0){
+            for (it = responses.begin(); it != responses.end(); ++it) {
+                //std::cout << " incoming mass: " << it->second->quantity() << std::endl;
+                inventory.Push(it->second);
+                compost = it->second->comp();
+                cyclus::CompMap cmap = compost->mass();
+            }
+        } else {
+            //Operational reloading
+            for (it = responses.begin(); it != responses.end(); ++it) {
+                if(it->first.request->commodity() == in_commods[0]){
+                    inventory.Push(it->second);
+                }
+            }
+        }
+    }
+}
+
+
 
 // WARNING! Do not change the following this function!!! This enables your
 // archetype to be dynamically loaded and any alterations will cause your

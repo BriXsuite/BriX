@@ -34,7 +34,7 @@ Test input for ReactorLite
     <config>
       <ReactorLite>
     	<in_commods>
-          <val>incommod1</val>
+          <val>fuel1</val>
     	</in_commods>
         <out_commod>outcommod1</out_commod>
         <libraries>
