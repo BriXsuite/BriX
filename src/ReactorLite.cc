@@ -32,9 +32,8 @@ void ReactorLite::Tick() {
         target_burnup << std::endl;
     }
 
-    LibInfo temp_lib;
     LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
-                          + libraries[0], temp_lib);
+                          + libraries[0], reactor_core_.library_);
 
     /// Library blending goes here, start by checking if libraries.size() > 1
 
@@ -89,7 +88,64 @@ void ReactorLite::Tock() {
 
 }
 
+// The reactor requests the amount of batches it needs
+std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRequests() {
+    using cyclus::RequestPortfolio;
+    using cyclus::Material;
+    using cyclus::CapacityConstraint;
+    using cyclus::Composition;
+    using cyclus::CompMap;
 
+    std::set<RequestPortfolio<Material>::Ptr> ports;
+
+    // Check refuel time
+    cyclus::Context* ctx = context();
+    if ((ctx->time() != cycle_end_ && inventory.count() != 0) || shutdown_ == true  ||
+       outage_remaining_ > 0) {return ports;}
+
+    CompMap cm;
+    Material::Ptr target = Material::CreateUntracked(core_mass/regions, Composition::CreateFromAtom(cm));
+
+    RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
+    float qty;
+
+    if (inventory.count() == 0) {
+        // First loading, all regions need to be loaded with fuel
+
+        if (target_burnup == 0) {
+            // Forward mode
+
+            for(int i = 0; i < regions; i++){
+            // Handles if initial load batches are defined
+            // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
+                if(in_commods.size() > i+1){
+                    port->AddRequest(target, this, in_commods[i+1]);
+                } else {
+                    port->AddRequest(target, this, in_commods[0]);
+                }
+            }
+        } else {
+            // Blending mode
+
+            for(int i = 0; i < regions; i++){
+                port->AddRequest(target, this, in_commods[0]);
+            }
+        }
+        qty = core_mass;
+    } else {
+        // One region refuel
+
+        port->AddRequest(target, this, in_commods[0]);
+        qty = core_mass/regions;
+    }
+
+    CapacityConstraint<Material> cc(qty);
+
+    port->AddConstraint(cc);
+    ports.insert(port);
+
+    return ports;
+}
 
 // WARNING! Do not change the following this function!!! This enables your
 // archetype to be dynamically loaded and any alterations will cause your

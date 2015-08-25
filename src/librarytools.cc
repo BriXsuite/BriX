@@ -128,7 +128,7 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest) {
     float tot_dest = 0;
     float tot_prod = 0;
     string line, library, iso;
-    nonActinide x_sections;                         // This stores tape9 cross-sections
+    nonActinide x_sections;                     // This stores tape9 cross-sections
     vector<nonActinide> nonActinides;           // This stores isotope compositions
     float sng, sn2n, sna, snp, sngx, sn2nx, yyn;
 

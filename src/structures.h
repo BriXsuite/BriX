@@ -117,6 +117,8 @@ public:
 
     float fluence_timestep_; // Fluence propagation time step [day]
 
+    LibInfo library_;
+
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
 

@@ -81,6 +81,8 @@ public:
     /// @param time the time of the tock
     virtual void Tock();
 
+    std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
+
 
     /** General Reactor Parameters **/
     #pragma cyclus var {"tooltip": "input commodity", \
@@ -121,6 +123,9 @@ public:
                       "tooltip": "reactor maximum inventory size", \
                       "doc": "total maximum inventory size of the reactor"}
     float max_inv_size;
+
+    #pragma cyclus var {"capacity": "max_inv_size"}
+    cyclus::toolkit::ResourceBuff inventory;
 
     #pragma cyclus var {"tooltip": "Target burnup, set to zero for forward mode", \
                       "default": 0, \
@@ -243,9 +248,10 @@ public:
 
 private:
     ReactorLiteInfo reactor_core_;      // Class that holds core info on reactor
-    bool shutdown = false;              // State of the reactor
-    int cycle_end_;                     // Reactor cycle end time
-    int start_time_;                    // Reactor start time
+    bool shutdown_ = false;              // State of the reactor
+    unsigned int cycle_end_;            // Reactor cycle end time
+    unsigned int start_time_;           // Reactor start time
+    unsigned int outage_remaining_ = 0; // Remaining outage time [in sim timestep] for refueling
 
 };
 
