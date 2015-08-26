@@ -3,3 +3,5 @@ outage_shutdown outage_remaining
 p_frac pow_frac
 generated_power thermal_pow_
 p_time pow_over_
+efficiency thermal_efficiency
+power_per_time pow_per_time_

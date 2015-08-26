@@ -87,43 +87,43 @@ void ReactorLite::Tick() {
 void ReactorLite::Tock() {
     std::cout << "Inventory: " << inventory.quantity() << std::endl;
     if (inventory.count() == 0) {return;}
-    if (shutdown == true) {return;}
+    if (shutdown_) {return;}
 
 
     cyclus::Context* ctx = context();
     // Checks the state of the reactor and sets up the power output for the timestep
-    if (outage_remaining > 1) {
+    if (outage_remaining_ > 1) {
         // Reactor still in outage
-        outage_remaining--;
+        outage_remaining_--;
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, 0);
         return;
-    } else if (outage_remaining == 1) {
+    } else if (outage_remaining_ == 1) {
         // Reactor on last month of shutdown
-        power_per_time = thermal_pow * pow_frac_ * efficiency;
-        outage_remaining = 0;
+        pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
+        outage_remaining_ = 0;
     } else {
         if (ctx->time() != cycle_end_) {
-            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*efficiency);
+            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*thermal_efficiency);
             return;
         } else {
-            if (pow_over_ + outage_time < 28.) {
-                pow_frac_ = 1. - outage_time/28.;
-                power_per_time = thermal_pow * pow_frac_ * efficiency;
-            } else if (pow_over_ + outage_time >= 28. && pow_over_ + outage_time < 56.) {
-                pow_frac_ = 2 - (pow_over_ + outage_time)/28.;
+            if (pow_over_ + outage_time_ < 28.) {
+                pow_frac_ = 1. - outage_time_/28.;
+                pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
+            } else if (pow_over_ + outage_time_ >= 28. && pow_over_ + outage_time_ < 56.) {
+                pow_frac_ = 2 - (pow_over_ + outage_time_)/28.;
                 float x = pow_over_/28.;
-                outage_remaining = 1;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*efficiency);
+                outage_remaining_ = 1;
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
             } else {
-                outage_remaining = 2;
-                while (pow_over_ + outage_time > outage_remaining*28.) {
-                    outage_remaining++;
+                outage_remaining_ = 2;
+                while (pow_over_ + outage_time_ > outage_remaining_*28.) {
+                    outage_remaining_++;
                 }
-                pow_frac_ = outage_remaining-(pow_over_ + outage_time)/28.;
-                outage_remaining--;
+                pow_frac_ = outage_remaining_-(pow_over_ + outage_time_)/28.;
+                outage_remaining_--;
                 float x = pow_over_/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*efficiency);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
             }
         }
@@ -133,8 +133,7 @@ void ReactorLite::Tock() {
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
 
-    cyclus::CompMap comp;
-    cyclus::CompMap::iterator it;
+    // Number of regions consistency check and fix
     if (manifest.size() > reactor_core_.region.size()) {
         for (int i = 0; i < manifest.size() - reactor_core_.region.size(); i++){
             RegionInfo region;
@@ -142,9 +141,10 @@ void ReactorLite::Tock() {
         }
     }
 
-
+    cyclus::CompMap comp;
+    cyclus::CompMap::iterator it;
 ///TODO move next block to accepting phase
-/**
+
     // Puts new isotope libraries into the reactorlite libraries for the new region
     for (int i = 0; i < manifest.size(); i++) {
         // Builds correct isoinfo and fraction of every isotope in each batch
@@ -174,8 +174,10 @@ void ReactorLite::Tock() {
             }
         }
     }
-*/
 
+
+
+/*
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     CoreBuilder();
 
@@ -283,11 +285,11 @@ void ReactorLite::Tock() {
             << " PU240: " << reactor_core_.region[0].comp[942400]  << " PU241: " << reactor_core_.region[0].comp[942410] << std::endl
             << " AM241: " << reactor_core_.region[0].comp[952410]  << " AM243: " << reactor_core_.region[0].comp[952430]
             << " CS135: " << reactor_core_.region[0].comp[551350]  << " CS137: " << reactor_core_.region[0].comp[551370] << std::endl;
-*/  }
+  }
     cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
     cyclus::toolkit::RecordTimeSeries("BURNUP", this, reactor_core_.region[0].discharge_BU);
     cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
-
+*/
 
 }
 
