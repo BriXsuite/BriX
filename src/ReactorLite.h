@@ -140,10 +140,10 @@ public:
                       "units": "MWd/kgIHM"}
     float target_CR;
 
-    #pragma cyclus var {"units": "MWe", \
+    #pragma cyclus var {"units": "MWth", \
                       "userlevel": 0, \
-                      "tooltip": "Electrical production."}
-    float generated_power;
+                      "tooltip": "Thermal heat production."}
+    float thermal_pow;
 
     #pragma cyclus var {"units": "kgIHM", \
                       "userlevel": 0, \
@@ -253,6 +253,8 @@ private:
     unsigned int cycle_end_;            // Reactor cycle end time
     unsigned int start_time_;           // Reactor start time
     unsigned int outage_remaining_ = 0; // Remaining outage time [in sim timestep] for refueling
+    float pow_frac_ = 0;
+    float month_remainter_ = 0;
 
 };
 

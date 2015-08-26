@@ -39,7 +39,7 @@ void ReactorLite::Tick() {
 
     // Record relevant user data in reactor_core_
     reactor_core_.regions_ = regions;
-    reactor_core_.power_ = generated_power;
+    reactor_core_.thermal_pow_ = thermal_pow;
     reactor_core_.core_mass_ = core_mass;
     reactor_core_.target_BU_ = target_burnup;
     reactor_core_.target_CR_ = target_CR;
@@ -86,6 +86,209 @@ void ReactorLite::Tick() {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
     std::cout << "Inventory: " << inventory.quantity() << std::endl;
+    if (inventory.count() == 0) {return;}
+    if (shutdown == true) {return;}
+
+
+    cyclus::Context* ctx = context();
+    // Checks the state of the reactor and sets up the power output for the timestep
+    if (outage_remaining > 1) {
+        // Reactor still in outage
+        outage_remaining--;
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, 0);
+        return;
+    } else if (outage_remaining == 1) {
+        // Reactor on last month of shutdown
+        power_per_time = thermal_pow * pow_frac_ * efficiency;
+        outage_remaining = 0;
+    } else {
+        if (ctx->time() != cycle_end_) {
+            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*efficiency);
+            return;
+        } else {
+            if (pow_over_ + outage_time < 28.) {
+                pow_frac_ = 1. - outage_time/28.;
+                power_per_time = thermal_pow * pow_frac_ * efficiency;
+            } else if (pow_over_ + outage_time >= 28. && pow_over_ + outage_time < 56.) {
+                pow_frac_ = 2 - (pow_over_ + outage_time)/28.;
+                float x = pow_over_/28.;
+                outage_remaining = 1;
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*efficiency);
+                return;
+            } else {
+                outage_remaining = 2;
+                while (pow_over_ + outage_time > outage_remaining*28.) {
+                    outage_remaining++;
+                }
+                pow_frac_ = outage_remaining-(pow_over_ + outage_time)/28.;
+                outage_remaining--;
+                float x = pow_over_/28.;
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*efficiency);
+                return;
+            }
+        }
+    }
+
+    // Pop materials out of inventory to create new regions
+    std::vector<cyclus::Material::Ptr> manifest;
+    manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
+
+    cyclus::CompMap comp;
+    cyclus::CompMap::iterator it;
+    if (manifest.size() > reactor_core_.region.size()) {
+        for (int i = 0; i < manifest.size() - reactor_core_.region.size(); i++){
+            RegionInfo region;
+            reactor_core_.region.push_back(region);
+        }
+    }
+
+
+///TODO move next block to accepting phase
+/**
+    // Puts new isotope libraries into the reactorlite libraries for the new region
+    for (int i = 0; i < manifest.size(); i++) {
+        // Builds correct isoinfo and fraction of every isotope in each batch
+        comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
+        int comp_iso;
+
+        // If a region has fluence the library must have been built
+        if (reactor_core_.region[i].fluence == 0) {
+            // Goes through each iso in comp
+            for (it = comp.begin(); it != comp.end(); ++it){
+                comp_iso = pyne::nucname::zzaaam(it->first);
+
+                // For each isotope in all_iso
+                for (int j = 0; j < reactor_core_.library_.all_iso.size(); j++) {
+                    if (reactor_core_.library_.all_iso[j].name == comp_iso) {
+                        IsoInfo temp_iso;
+                        temp_iso = reactor_core_.library_.all_iso[j];
+                        if(target_burnup == 0){
+                            temp_iso.fraction = it->second;
+                        } else {
+                            temp_iso.fraction = it->second/(core_mass/batches);
+                        }
+
+                        reactor_core_.region[i].iso.push_back(temp_iso);
+                    }
+                }
+            }
+        }
+    }
+*/
+
+    //collapse iso's, read struct effects, reorder the fuel batches accordingly
+    CoreBuilder();
+
+    // record the burnup of the core before cycle begins
+    float BU_prev = 0;
+    float BU_next = 0;
+    float delta_BU;
+
+    for(int i = 0; i < reactor_core_.region.size(); i++){
+        BU_prev += reactor_core_.region[i].return_BU();
+    }
+    BU_prev /= reactor_core_.region.size();
+    //pass fuel bundles to burn-up calc
+
+    if(CR_target < 0){
+        burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    } else if (target_burnup > 0){
+        if(refuels < batches){
+            fuel_library_.target_BU = (float)(refuels+1.)*target_burnup/(float)batches;
+        } else {
+            fuel_library_.target_BU = target_burnup;
+        }
+        burnupcalc_CR(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    } else {
+        burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    }
+
+    // this is saved and may be used later for steady state calcs during blending
+    ss_fluence = reactor_core_.region[batches-1].batch_fluence;
+
+    //convert fuel bundle into materials
+    for(int i = 0; i < reactor_core_.region.size(); i++){
+        cyclus::CompMap out_comp;
+        for(std::map<int, float>::iterator c = reactor_core_.region[i].comp.begin(); c != reactor_core_.region[i].comp.end(); ++c){
+            if(c->second < 0){
+            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
+        } else {
+            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
+        }
+    }
+    manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
+    inventory.Push(manifest[i]);
+  }
+    // record burnup of the core after cycle ends
+    for(int i = 0; i < reactor_core_.region.size(); i++){
+        BU_next += reactor_core_.region[i].return_BU();
+    }
+    BU_next /= reactor_core_.region.size();
+
+    delta_BU = (BU_next - BU_prev);
+    if(delta_BU < 0){delta_BU = 0;}
+
+    //cycle end update
+    if(cycle_length > 0){
+        cycle_end_ = ctx->time() + cycle_length;
+        pow_over_ =  28. * ((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
+        //if the cycle length is less than 2 the fluence of batches will build up.
+        if(cycle_end_ - ctx->time() < 1){
+            std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+            std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
+            cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
+        }
+
+    } else {
+        //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
+        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
+        pow_over_ =  28*((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
+    }
+
+
+    //increments the number of times the reactor has been refueled.
+    refuels += 1;
+
+  //shutdown check
+  if( (ctx->time() > start_time_ + reactor_life && record == true) || (refuels >= max_cycles) ){
+    shutdown = true;
+    std::cout << ctx->time() << " Agent " << id() << " shutdown after " << refuels << " cycles. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
+     for(int i = 0; i < reactor_core_.region.size(); i++){
+        int ii;
+        float burnup;
+
+        burnup = reactor_core_.region[i].return_BU();
+        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
+            // std::cout << " -> U235: " << reactor_core_.region[i].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
+            // + reactor_core_.region[i].comp[942410] << " Total Pu: " << reactor_core_.region[i].comp[942380] + reactor_core_.region[i].comp[942390]
+            // + reactor_core_.region[i].comp[942400] + reactor_core_.region[i].comp[942410] + reactor_core_.region[i].comp[942420] << std::endl;
+        cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
+        cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
+     }
+    record = false;
+    //std::cout << std::endl;
+  }
+
+
+  if(shutdown != true && record == true){
+      std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << reactor_core_.region[0].discharge_BU << "  Batch CR: " <<
+            reactor_core_.region[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+/*
+        std::cout << " -> U235: " << reactor_core_.region[0].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
+            + reactor_core_.region[0].comp[942410] << " Total Pu: " << reactor_core_.region[0].comp[942380] + reactor_core_.region[0].comp[942390]
+            + reactor_core_.region[0].comp[942400] + reactor_core_.region[0].comp[942410] + reactor_core_.region[0].comp[942420] << std::endl;
+
+        std::cout << " U238: " << reactor_core_.region[0].comp[922380] << " U236: " << reactor_core_.region[0].comp[922360]
+            << " PU238: " << reactor_core_.region[0].comp[942380]  << " PU239: " << reactor_core_.region[0].comp[942390]
+            << " PU240: " << reactor_core_.region[0].comp[942400]  << " PU241: " << reactor_core_.region[0].comp[942410] << std::endl
+            << " AM241: " << reactor_core_.region[0].comp[952410]  << " AM243: " << reactor_core_.region[0].comp[952430]
+            << " CS135: " << reactor_core_.region[0].comp[551350]  << " CS137: " << reactor_core_.region[0].comp[551370] << std::endl;
+*/  }
+    cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
+    cyclus::toolkit::RecordTimeSeries("BURNUP", this, reactor_core_.region[0].discharge_BU);
+    cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
+
+
 }
 
 // The reactor requests the amount of batches it needs
