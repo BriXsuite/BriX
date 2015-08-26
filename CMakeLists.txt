@@ -125,12 +125,8 @@ configure_file(
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
-# Install Brightlite Reactor Libraries
-# finds reactor libraries based on presence of 'manifest.txt' file
-set(BRIGHTLITE_SHARE "${CYCLUS_ROOT_DIR}/share/brightlite")
+# Install BriX Libraries
+# Adds folders in the /libraries folder
+set(BRIX_SHARE "${CYCLUS_ROOT_DIR}/share/brix")
 file(GLOB_RECURSE BLMANIFESTS FOLLOW_SYMLINKS "${CMAKE_SOURCE_DIR}/*/manifest.txt")
-foreach(manifest ${BLMANIFESTS})
-    get_filename_component(RXDIR ${manifest} DIRECTORY)
-    set(RXDIRS "${RXDIRS}" "${RXDIR}")
-endforeach()
-install(DIRECTORY ${RXDIRS} DESTINATION "${BRIGHTLITE_SHARE}")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/libraries DESTINATION "${BRIX_SHARE}")
