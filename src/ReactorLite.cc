@@ -129,56 +129,16 @@ void ReactorLite::Tock() {
         }
     }
 
-    // Pop materials out of inventory to create new regions
+    // Pop materials out of inventory to create new regions and update fractions
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
 
-    // Number of regions consistency check and fix
-    if (manifest.size() > reactor_core_.region.size()) {
-        for (int i = 0; i < manifest.size() - reactor_core_.region.size(); i++){
-            RegionInfo region;
-            reactor_core_.region.push_back(region);
-        }
-    }
-
-    cyclus::CompMap comp;
-    cyclus::CompMap::iterator it;
-///TODO move next block to accepting phase
-
-    // Puts new isotope libraries into the reactorlite libraries for the new region
-    for (int i = 0; i < manifest.size(); i++) {
-        // Builds correct isoinfo and fraction of every isotope in each batch
-        comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
-        int comp_iso;
-
-        // If a region has fluence the library must have been built
-        if (reactor_core_.region[i].fluence == 0) {
-            // Goes through each iso in comp
-            for (it = comp.begin(); it != comp.end(); ++it){
-                comp_iso = pyne::nucname::zzaaam(it->first);
-
-                // For each isotope in all_iso
-                for (int j = 0; j < reactor_core_.library_.all_iso.size(); j++) {
-                    if (reactor_core_.library_.all_iso[j].name == comp_iso) {
-                        IsoInfo temp_iso;
-                        temp_iso = reactor_core_.library_.all_iso[j];
-                        if(target_burnup == 0){
-                            temp_iso.fraction = it->second;
-                        } else {
-                            temp_iso.fraction = it->second/(core_mass/batches);
-                        }
-
-                        reactor_core_.region[i].iso.push_back(temp_iso);
-                    }
-                }
-            }
-        }
-    }
+    reactor_core_.UpdateFractions(manifest);
 
 
 
 /*
-    //collapse iso's, read struct effects, reorder the fuel batches accordingly
+    //collapse iso's, read struct effects, reorder the fuel regions accordingly
     CoreBuilder();
 
     // record the burnup of the core before cycle begins
@@ -195,8 +155,8 @@ void ReactorLite::Tock() {
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     } else if (target_burnup > 0){
-        if(refuels < batches){
-            fuel_library_.target_BU = (float)(refuels+1.)*target_burnup/(float)batches;
+        if(refuels < regions){
+            fuel_library_.target_BU = (float)(refuels+1.)*target_burnup/(float)regions;
         } else {
             fuel_library_.target_BU = target_burnup;
         }
@@ -206,7 +166,7 @@ void ReactorLite::Tock() {
     }
 
     // this is saved and may be used later for steady state calcs during blending
-    ss_fluence = reactor_core_.region[batches-1].batch_fluence;
+    ss_fluence = reactor_core_.region[regions-1].batch_fluence;
 
     //convert fuel bundle into materials
     for(int i = 0; i < reactor_core_.region.size(); i++){
@@ -234,7 +194,7 @@ void ReactorLite::Tock() {
     if(cycle_length > 0){
         cycle_end_ = ctx->time() + cycle_length;
         pow_over_ =  28. * ((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
-        //if the cycle length is less than 2 the fluence of batches will build up.
+        //if the cycle length is less than 2 the fluence of regions will build up.
         if(cycle_end_ - ctx->time() < 1){
             std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
             std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
@@ -293,7 +253,7 @@ void ReactorLite::Tock() {
 
 }
 
-// The reactor requests the amount of batches it needs
+// The reactor requests the amount of regions it needs
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRequests() {
     using cyclus::RequestPortfolio;
     using cyclus::Material;
@@ -321,7 +281,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
             // Forward mode
 
             for(int i = 0; i < regions; i++){
-            // Handles if initial load batches are defined
+            // Handles if initial load regions are defined
             // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
                 if(in_commods.size() > i+1){
                     port->AddRequest(target, this, in_commods[i+1]);

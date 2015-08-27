@@ -1,3 +1,4 @@
+batches regions
 isoInformation IsoInfo
 outage_shutdown outage_remaining
 p_frac pow_frac

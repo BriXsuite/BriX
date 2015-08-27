@@ -5,6 +5,10 @@
 
 #include "cyclus.h"
 
+#include <string>
+#include <cmath>
+#include <sstream>
+
 
 struct Daughter {
     unsigned int name;
@@ -87,6 +91,7 @@ public:
     float mass_;             // Mass of region, gets assigned at first tick
 
     IsoInfo iso;             // Collapsed, isoinfo for region
+    std::map<int,float> fractions; // Name and fraction of each isotope
 
     unsigned int location_;  // Radial location of region, 1:center
 
@@ -122,8 +127,7 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
 
-
-
+    void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
 };
 
 #endif // STRUCTURES_H_INCLUDED
