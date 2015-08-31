@@ -165,6 +165,10 @@ public:
                       "tooltip": "Flux calculation method. 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial"}
     int flux_mode;
 
+    #pragma cyclus var {"default": 1, \
+                      "userlevel": 2, \
+                      "tooltip": "Structural (nonfuel) material effect calculation. 0:OFF, 1:ON"}
+    int struct_mode;
 
 
     /** Spatial Method Parameters **/

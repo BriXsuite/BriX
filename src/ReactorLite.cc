@@ -58,8 +58,10 @@ void ReactorLite::Tick() {
     }
 
     // Add structural material info
-    StructReader(cyclus::Env::GetInstallPath() + "/share/brix/libraries/" + libraries[0],
+    if (struct_mode == 1) {
+        StructReader(cyclus::Env::GetInstallPath() + "/share/brix/libraries/" + libraries[0],
                  reactor_core_.struct_prod_, reactor_core_.struct_dest_);
+    }
 
     // Add spatial calculation parameters
     if (flux_mode == 2) {
