@@ -16,7 +16,8 @@ struct Daughter {
     float fraction;
 };
 
-struct IsoInfo {
+class IsoInfo {
+public:
     unsigned int name;          // Nucid if uncollapsed
     float fraction;             // Fraction of this isotope in the inherited class
     std::vector<float> fluence;
@@ -25,6 +26,8 @@ struct IsoInfo {
     std::vector<float> BU;      //total BU
     std::vector<float> fission_products; // Fission product lump mass
     std::vector<Daughter> iso_vector;
+
+    void Print(unsigned const int times);
 };
 
 struct nonActinide {
@@ -127,7 +130,6 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
 
-    void PrintLibrary(unsigned const int reg_i);
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIso(unsigned const int reg_i);
 };

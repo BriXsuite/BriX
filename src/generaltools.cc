@@ -23,3 +23,36 @@ void CumulativeAdd(vector<float> &data) {
         data[i] += data[i-1];
     }
 }
+
+
+void PrintIso(IsoInfo isotope) {
+    const int times = 7;
+    std::cout << std::endl << "Isotope lib: " << isotope.name << std::endl;
+
+    if (isotope.fluence.size() < 1) {
+        std::cout << "  !Region not built." << std::endl;
+        return;
+    }
+
+    std::cout << "Fluence: ";
+    for (int i = 0; i < times; i++) {
+        std::cout << isotope.fluence[i] << " ";
+    } std::cout << std::endl;
+
+    std::cout << "NProd: ";
+    for (int i = 0; i < times; i++) {
+        std::cout << isotope.neutron_prod[i] << " ";
+    } std::cout << std::endl;
+
+    std::cout << "NDest: ";
+    for (int i = 0; i < times; i++) {
+        std::cout << isotope.neutron_dest[i] << " ";
+    } std::cout << std::endl;
+
+    std::cout << "BU: ";
+    for (int i = 0; i < times; i++) {
+        std::cout << isotope.BU[i] << " ";
+    } std::cout << std::endl;
+
+    std::cout << "----------------------------" << std::endl;
+}
