@@ -99,9 +99,10 @@ public:
     unsigned int location_;  // Radial location of region, 1:center
 
     float fluence_ = 0;      // Fluence of this region
-    float rflux_ = 1;            // Relative flux of region
-    float DA = 1;
+    float rflux_ = 1;        // Relative flux of region
+    float DA = 1;            // Disadvantage factor
 
+    void BuildIso(LibInfo library);
 };
 
 class ReactorLiteInfo {
@@ -131,7 +132,7 @@ public:
     std::vector<RegionInfo> region;
 
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
-    void BuildRegionIso(unsigned const int reg_i);
+    void BuildRegionIsos();
 };
 
 #endif // STRUCTURES_H_INCLUDED

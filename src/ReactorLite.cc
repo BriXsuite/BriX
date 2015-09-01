@@ -138,13 +138,7 @@ void ReactorLite::Tock() {
     // Update the fractions in reactor_core_ with the popped manifest fractions
     reactor_core_.UpdateFractions(manifest);
 
-
-    std::cout << "before buildregioniso" << std::endl;
-    std::cout << "name: " << reactor_core_.library_.all_iso[0].name << " " << reactor_core_.library_.all_iso[1].name << std::endl;
-    std::cout << "fractions: " << reactor_core_.region[0].fractions[922350] << " " << reactor_core_.region[0].fractions[922380] << std::endl;
-    std::cout << reactor_core_.library_.all_iso[0].neutron_prod[1] << " " << reactor_core_.library_.all_iso[1].neutron_prod[1] << std::endl;
-    reactor_core_.BuildRegionIso(0);
-    std::cout << "after buildregioniso" << std::endl;
+    reactor_core_.BuildRegionIsos();
 
 /*
     //collapse iso's, read struct effects, reorder the fuel regions accordingly

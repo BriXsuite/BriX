@@ -1,5 +1,6 @@
 #include "structures.h"
 
+// Prints the isotope data to terminal
 void IsoInfo::Print(unsigned int times) {
     std::cout << std::endl << "Isotope lib: " << name << std::endl;
 
@@ -32,6 +33,91 @@ void IsoInfo::Print(unsigned int times) {
 
     std::cout << "----------------------------" << std::endl;
 
+}
+
+
+// Updates the iso in that region with the fraction
+void RegionInfo::BuildIso(LibInfo library) {
+
+    iso.name = 0; // Zero represents a collapsed iso and not a specific isotope
+
+    // For every available isotope in the library
+    for (unsigned int lib_i = 0; lib_i < library.all_iso.size(); lib_i++) {
+        // Save the name of the current library isotope
+        unsigned const int iso_name = library.all_iso[lib_i].name;
+
+        //
+        if (library.all_iso[lib_i].iso_vector.size() > 0) {
+            if (iso.fluence.size() < 1) {
+                for (int i = 0; i < library.all_iso[lib_i].fluence.size(); i++) {
+                    iso.fluence.push_back(library.all_iso[lib_i].fluence[i]);
+                }
+                for (int i = 0; i < library.all_iso[lib_i].neutron_prod.size(); i++) {
+                    iso.neutron_prod.push_back(fractions[iso_name] * library.all_iso[lib_i].neutron_prod[i]);
+                }
+                for (int i = 0; i < library.all_iso[lib_i].neutron_dest.size(); i++) {
+                    iso.neutron_dest.push_back(fractions[iso_name] * library.all_iso[lib_i].neutron_dest[i]);
+                }
+                for (int i = 0; i < library.all_iso[lib_i].BU.size(); i++) {
+                    iso.BU.push_back(fractions[iso_name] * library.all_iso[lib_i].BU[i]);
+                }
+                for (int i = 0; i < library.all_iso[lib_i].iso_vector.size(); i++) {
+                    iso.iso_vector.push_back(library.all_iso[lib_i].iso_vector[i]);
+                    for(int k = 0; k < iso.iso_vector[i].mass.size(); k++) {
+                        iso.iso_vector[i].mass[k] = fractions[iso_name] * iso.iso_vector[i].mass[k];
+                    }
+                }
+            } else {
+
+                for (int i = 0; i < library.all_iso[lib_i].neutron_prod.size(); i++) {
+                    iso.neutron_prod[i] += fractions[iso_name] * library.all_iso[lib_i].neutron_prod[i];
+                }
+                for (int i = 0; i < library.all_iso[lib_i].neutron_dest.size(); i++) {
+                    iso.neutron_dest[i] += fractions[iso_name] * library.all_iso[lib_i].neutron_dest[i];
+                }
+                for (int i = 0; i < library.all_iso[lib_i].BU.size(); i++) {
+                    iso.BU[i] += fractions[iso_name] * library.all_iso[lib_i].BU[i];
+                }
+                for (int i = 0; i < library.all_iso[lib_i].iso_vector.size(); i++) {
+                    bool iso_check = true;
+                    for (int j = 0; j < iso.iso_vector.size(); j++) {
+                        if (library.all_iso[lib_i].iso_vector[i].name == iso.iso_vector[j].name) {
+                            for (int k = 0; k < iso.iso_vector[j].mass.size(); k++) {
+                                for (int ii = 0; ii < library.all_iso[lib_i].iso_vector[i].mass.size(); ii ++) {
+                                    if ( k ==ii ) {
+                                        iso.iso_vector[j].mass[k] += fractions[iso_name] *library.all_iso[lib_i].iso_vector[i].mass[ii];
+                                    }
+                                }
+                            }
+                            iso_check = false;
+                        }
+                    }
+                    if (iso_check == true) {
+                        iso.iso_vector.push_back(library.all_iso[lib_i].iso_vector[i]);
+                        for(int k = 0; k < iso.iso_vector[iso.iso_vector.size()-1].mass.size()-1; k++) {
+                            iso.iso_vector[iso.iso_vector.size()-1].mass[k] = iso.iso_vector[iso.iso_vector.size()-1].mass[k]*fractions[iso_name] ;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (iso.neutron_prod.size() > 1) {
+                for (int i = 0; i < library.all_iso[lib_i].neutron_prod.size(); i++) {
+                    iso.neutron_prod[i] = iso.neutron_prod[i] + fractions[iso_name] *library.all_iso[lib_i].neutron_prod[i];
+                }
+                for (int i = 0; i < library.all_iso[lib_i].neutron_dest.size(); i++) {
+                    iso.neutron_dest[i] = iso.neutron_dest[i] + fractions[iso_name] *library.all_iso[lib_i].neutron_dest[i];
+                }
+            } else {
+                for (int i = 0; i < library.all_iso[lib_i].neutron_prod.size(); i++) {
+                    iso.neutron_prod.push_back(fractions[iso_name] *library.all_iso[lib_i].neutron_prod[i]+(fractions[iso_name] )*library.all_iso[1].neutron_prod[i]);
+                }
+                for (int i = 0; i < library.all_iso[lib_i].neutron_dest.size(); i++) {
+                    iso.neutron_dest.push_back(fractions[iso_name] *library.all_iso[lib_i].neutron_dest[i]+(fractions[iso_name] )*library.all_iso[1].neutron_dest[i]);
+                }
+            }
+        }
+    }
 }
 
 
@@ -79,95 +165,15 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
     } // Manifest_size, i
 }
 
-// Takes the region index and updates the iso in that region with the fraction
-void ReactorLiteInfo::BuildRegionIso(unsigned const int reg_i) {
-    ///TODO segfault check
-    IsoInfo new_fuel;
-    new_fuel.name = 0; // Represents a collapsed iso and not a specific isotope
-
-    // For every available isotope in the library
-    for (unsigned int lib_i = 0; lib_i < library_.all_iso.size(); lib_i++) {
-        // Save the name of the current library isotope
-        unsigned const int iso_name = library_.all_iso[lib_i].name;
-
-        //
-        if (library_.all_iso[lib_i].iso_vector.size() > 0) {
-            if (new_fuel.fluence.size() < 1) {
-                for (int i = 0; i < library_.all_iso[lib_i].fluence.size(); i++) {
-                    new_fuel.fluence.push_back(library_.all_iso[lib_i].fluence[i]);
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_prod.size(); i++) {
-                    new_fuel.neutron_prod.push_back(region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].neutron_prod[i]);
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_dest.size(); i++) {
-                    new_fuel.neutron_dest.push_back(region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].neutron_dest[i]);
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].BU.size(); i++) {
-                    new_fuel.BU.push_back(region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].BU[i]);
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].iso_vector.size(); i++) {
-                    new_fuel.iso_vector.push_back(library_.all_iso[lib_i].iso_vector[i]);
-                    for(int k = 0; k < new_fuel.iso_vector[i].mass.size(); k++) {
-                        new_fuel.iso_vector[i].mass[k] = region[reg_i].fractions[iso_name] * new_fuel.iso_vector[i].mass[k];
-                    }
-                }
-            } else {
-
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_prod.size(); i++) {
-                    new_fuel.neutron_prod[i] += region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].neutron_prod[i];
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_dest.size(); i++) {
-                    new_fuel.neutron_dest[i] += region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].neutron_dest[i];
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].BU.size(); i++) {
-                    new_fuel.BU[i] += region[reg_i].fractions[iso_name] * library_.all_iso[lib_i].BU[i];
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].iso_vector.size(); i++) {
-                    bool iso_check = true;
-                    for (int j = 0; j < new_fuel.iso_vector.size(); j++) {
-                        if (library_.all_iso[lib_i].iso_vector[i].name == new_fuel.iso_vector[j].name) {
-                            for (int k = 0; k < new_fuel.iso_vector[j].mass.size(); k++) {
-                                for (int ii = 0; ii < library_.all_iso[lib_i].iso_vector[i].mass.size(); ii ++) {
-                                    if ( k ==ii ) {
-                                        new_fuel.iso_vector[j].mass[k] += region[reg_i].fractions[iso_name] *library_.all_iso[lib_i].iso_vector[i].mass[ii];
-                                    }
-                                }
-                            }
-                            iso_check = false;
-                        }
-                    }
-                    if (iso_check == true) {
-                        new_fuel.iso_vector.push_back(library_.all_iso[lib_i].iso_vector[i]);
-                        for(int k = 0; k < new_fuel.iso_vector[new_fuel.iso_vector.size()-1].mass.size()-1; k++) {
-                            new_fuel.iso_vector[new_fuel.iso_vector.size()-1].mass[k] = new_fuel.iso_vector[new_fuel.iso_vector.size()-1].mass[k]*region[reg_i].fractions[iso_name] ;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (new_fuel.neutron_prod.size() > 1) {
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_prod.size(); i++) {
-                    new_fuel.neutron_prod[i] = new_fuel.neutron_prod[i] + region[reg_i].fractions[iso_name] *library_.all_iso[lib_i].neutron_prod[i];
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_dest.size(); i++) {
-                    new_fuel.neutron_dest[i] = new_fuel.neutron_dest[i] + region[reg_i].fractions[iso_name] *library_.all_iso[lib_i].neutron_dest[i];
-                }
-            } else {
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_prod.size(); i++) {
-                    new_fuel.neutron_prod.push_back(region[reg_i].fractions[iso_name] *library_.all_iso[lib_i].neutron_prod[i]+(region[reg_i].fractions[iso_name] )*library_.all_iso[1].neutron_prod[i]);
-                }
-                for (int i = 0; i < library_.all_iso[lib_i].neutron_dest.size(); i++) {
-                    new_fuel.neutron_dest.push_back(region[reg_i].fractions[iso_name] *library_.all_iso[lib_i].neutron_dest[i]+(region[reg_i].fractions[iso_name] )*library_.all_iso[1].neutron_dest[i]);
-                }
-            }
+// Goes through all regions and builds their isos
+void  ReactorLiteInfo::BuildRegionIsos() {
+    for (unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+        // If a region has zero fluence the iso must not be built yet
+        if (region[reg_i].fluence_ == 0) {
+            region[reg_i].BuildIso(library_);
         }
     }
-    new_fuel.Print(5);
-
 }
-
-
-
 
 
 
