@@ -121,6 +121,17 @@ void RegionInfo::BuildIso(LibInfo library) {
     }
 }
 
+// Determines the burnup of the region based on its fluence
+float RegionInfo::CalcBU() {
+    unsigned int ii;
+
+    for(ii = 0; iso.fluence[ii] <= fluence_; ii++){}
+
+    if(ii == 0){return 0;}
+
+    return Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence_);
+}
+
 
 // Updates the fractions of regions, builds new regions if they're empty
 void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifest) {
@@ -192,7 +203,7 @@ void ReactorLiteInfo::Reorder() {
                  / (region[remain_i].iso.neutron_dest[0] + region[remain_i].iso.neutron_dest[1]);
 
             if(k0 > k1) {
-                //std::cout << k1 << " is smaller than " << k0 << std::endl;
+                std::cout << k1 << " is smaller than " << k0 << std::endl;
                 lowest = remain_i;
             }
         }

@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "cyclus.h"
+#include "generaltools.h"
 
 #include <string>
 #include <cmath>
@@ -103,6 +104,7 @@ public:
     float DA = 1;            // Disadvantage factor
 
     void BuildIso(LibInfo library);
+    float CalcBU();          // Returns the burnup at the fluence
 };
 
 class ReactorLiteInfo {
