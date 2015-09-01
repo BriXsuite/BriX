@@ -189,7 +189,6 @@ void  ReactorLiteInfo::BuildRegionIsos() {
 
 // Reorders regions so that lowest k is at entry zero
 void ReactorLiteInfo::Reorder() {
-    ///UNTESTED!
     std::vector<RegionInfo> temp_region = region;
     region.clear();
     float k0, k1;
@@ -197,13 +196,13 @@ void ReactorLiteInfo::Reorder() {
     while(temp_region.size() != 0) {
         unsigned int lowest = 0;
         for(unsigned int remain_i = 1; remain_i < temp_region.size(); remain_i++) {
+            // The first two discrete points are used as opposed to the very first
             k0 = (region[lowest].iso.neutron_prod[0] + region[lowest].iso.neutron_prod[1])
-                 / (region[lowest].iso.neutron_dest[0] + region[lowest].iso.neutron_dest[1]);
+                 + (region[lowest].iso.neutron_dest[0] + region[lowest].iso.neutron_dest[1]);
             k1 = (region[remain_i].iso.neutron_prod[0] + region[remain_i].iso.neutron_prod[1])
-                 / (region[remain_i].iso.neutron_dest[0] + region[remain_i].iso.neutron_dest[1]);
+                 + (region[remain_i].iso.neutron_dest[0] + region[remain_i].iso.neutron_dest[1]);
 
             if(k0 > k1) {
-                std::cout << k1 << " is smaller than " << k0 << std::endl;
                 lowest = remain_i;
             }
         }
@@ -212,7 +211,14 @@ void ReactorLiteInfo::Reorder() {
     }
 }
 
-
+// Returns the total burnup of the core by going through each batch
+float ReactorLiteInfo::CalcBU() {
+    float total_BU = 0;
+    for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+        total_BU += region[reg_i].CalcBU();
+    }
+    return total_BU;
+}
 
 
 

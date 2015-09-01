@@ -136,6 +136,7 @@ public:
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();
     void Reorder();             // Reorders regions from lowest k to highest
+    float CalcBU();             // Caluclates the burnup of the core
 };
 
 #endif // STRUCTURES_H_INCLUDED
