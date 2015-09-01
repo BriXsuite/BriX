@@ -143,6 +143,7 @@ void ReactorLite::Tock() {
     ///TODO Call this only at startup (isos have to be built)
     reactor_core_.Reorder();
 
+    BurnFuel(reactor_core_);
 /*
     //collapse iso's, read struct effects, reorder the fuel regions accordingly
     CoreBuilder();

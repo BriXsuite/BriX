@@ -18,5 +18,7 @@ void IsoBuilder(string library_path, IsoInfo &iso);
 float FluxFinder(string library_path);
 void StructReader(string library_path, float &struct_prod, float &struct_dest);
 void DACalc(ReactorLiteInfo &reactor_core);
+void BurnFuel(ReactorLiteInfo &reactor_core);
+void CriticalityBurn(ReactorLiteInfo &reactor_core);
 
 #endif // LIBRARYTOOLS_H

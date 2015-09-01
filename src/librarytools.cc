@@ -260,10 +260,48 @@ void DACalc(ReactorLiteInfo &reactor_core){
     }
 }
 
+// Determines the operating mode of reactor and burns fuel accordingly
+void BurnFuel(ReactorLiteInfo &reactor_core) {
+    if(reactor_core.target_CR_ < 0) {
+        // Reactor is in stop at k=1 mode
+        ///TODO normal fuel burn
+    } else {
+        ///TODO CR burn
+    }
+
+}
+
+// Burns the fuel based only on criticality condition
+void CriticalityBurn(ReactorLiteInfo &reactor_core) {
+// yes this IS old burnupcalc
+    float kcore = 1.5;
+
+    while(kcore < 1) {
+        kcore_prev = kcore;
 
 
+    }
 
+}
 
+// Determines the flux calculation method and calls flux function accordingly
+void FluxCalc(ReactorLiteInfo &reactor_core) {
+    const unsigned int mode = reactor_core.flux_mode_;
+
+    if(mode == 0) {
+        // Simplest mode, all fluxes are 1
+        for(unsigned int reg_i = 0; reg_i < reactor_core.region.size(); reg_i++){
+            reactor_core.region[reg_i].rflux_ = 1;
+            return;
+        }
+    }
+    else if (mode == 1) {}
+    else if (mode == 2) {}
+    else if (mode == 3) {}
+    else {
+        std::cout << "  Error in flux mode input for ReactorLite" << std::endl;
+    }
+}
 
 
 

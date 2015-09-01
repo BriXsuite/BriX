@@ -134,9 +134,9 @@ public:
                       "units": "MWd/kgIHM"}
     float target_burnup;
 
-    #pragma cyclus var {"tooltip": "Target conversion ratio, set to zero for forward mode", \
-                      "default": 0, \
-                      "userlevel": 0, \
+    #pragma cyclus var {"tooltip": "Target conversion ratio, set to negative for forward mode", \
+                      "default": -1, \
+                      "userlevel": 1, \
                       "units": "MWd/kgIHM"}
     float target_CR;
 
@@ -162,7 +162,7 @@ public:
 
     #pragma cyclus var {"default": 0, \
                       "userlevel": 2, \
-                      "tooltip": "Flux calculation method. 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial"}
+                      "tooltip": "Flux calculation method. 0: Uniform (all regions always 1), 1:Eq Power, 2:Inv.Neut.Prod, 3:Spatial"}
     int flux_mode;
 
     #pragma cyclus var {"default": 1, \
