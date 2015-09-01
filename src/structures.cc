@@ -1,7 +1,7 @@
 #include "structures.h"
 
 // Prints the isotope data to terminal
-void IsoInfo::Print(unsigned int times) {
+void IsoInfo::Print(int times) {
     std::cout << std::endl << "Isotope lib: " << name << std::endl;
 
     if (fluence.size() < 1) {

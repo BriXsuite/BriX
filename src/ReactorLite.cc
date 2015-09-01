@@ -140,6 +140,8 @@ void ReactorLite::Tock() {
 
     reactor_core_.BuildRegionIsos();
 
+    reactor_core_.region[2].iso.Print();
+
 /*
     //collapse iso's, read struct effects, reorder the fuel regions accordingly
     CoreBuilder();

@@ -27,7 +27,7 @@ public:
     std::vector<float> fission_products; // Fission product lump mass
     std::vector<Daughter> iso_vector;
 
-    void Print(unsigned const int times);
+    void Print(int times = 5);
 };
 
 struct nonActinide {
