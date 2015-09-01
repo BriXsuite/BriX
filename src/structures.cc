@@ -2,7 +2,8 @@
 
 // Prints the isotope data to terminal
 void IsoInfo::Print(int times) {
-    std::cout << std::endl << "Isotope lib: " << name << std::endl;
+    std::cout << std::endl << "Isotope lib name: " << name << " fraction: "
+              << fraction << std::endl;
 
     if (fluence.size() < 1) {
         std::cout << "  !Region not built." << std::endl;
@@ -175,7 +176,30 @@ void  ReactorLiteInfo::BuildRegionIsos() {
     }
 }
 
+// Reorders regions so that lowest k is at entry zero
+void ReactorLiteInfo::Reorder() {
+    ///UNTESTED!
+    std::vector<RegionInfo> temp_region = region;
+    region.clear();
+    float k0, k1;
 
+    while(temp_region.size() != 0) {
+        unsigned int lowest = 0;
+        for(unsigned int remain_i = 1; remain_i < temp_region.size(); remain_i++) {
+            k0 = (region[lowest].iso.neutron_prod[0] + region[lowest].iso.neutron_prod[1])
+                 / (region[lowest].iso.neutron_dest[0] + region[lowest].iso.neutron_dest[1]);
+            k1 = (region[remain_i].iso.neutron_prod[0] + region[remain_i].iso.neutron_prod[1])
+                 / (region[remain_i].iso.neutron_dest[0] + region[remain_i].iso.neutron_dest[1]);
+
+            if(k0 > k1) {
+                //std::cout << k1 << " is smaller than " << k0 << std::endl;
+                lowest = remain_i;
+            }
+        }
+        region.push_back(temp_region[lowest]);
+        temp_region.erase(temp_region.begin() + lowest);
+    }
+}
 
 
 

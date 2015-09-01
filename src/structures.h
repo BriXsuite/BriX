@@ -133,6 +133,7 @@ public:
 
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();
+    void Reorder();             // Reorders regions from lowest k to highest
 };
 
 #endif // STRUCTURES_H_INCLUDED
