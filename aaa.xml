@@ -17,25 +17,73 @@ Test input for ReactorLite
     <spec><lib>agents</lib><name>NullInst</name></spec>
   </archetypes>
 
-
   <facility>
-    <name>Source1</name>
+    <name>Source</name>
     <config>
       <Source>
-        <commod>fuel1</commod>
-        <recipe_name>commod_recipe1</recipe_name>
-	<capacity>50000</capacity>
+        <commod>freshFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+	<capacity>5000000</capacity>
       </Source>
     </config>
   </facility>
 
   <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>freshFuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+	<capacity>350000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source2</name>
+    <config>
+      <Source>
+        <commod>freshFuel2</commod>
+        <recipe_name>commod_recipe2</recipe_name>
+	<capacity>350000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source3</name>
+    <config>
+      <Source>
+        <commod>freshFuel3</commod>
+        <recipe_name>commod_recipe3</recipe_name>
+	<capacity>350000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source4</name>
+    <config>
+      <Source>
+        <commod>freshFuel4</commod>
+        <recipe_name>commod_recipe4</recipe_name>
+	<capacity>350000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+
+  <facility>
     <name>BriX_ReactorLite</name>
     <config>
       <ReactorLite>
-    	<in_commods>
-          <val>fuel1</val>
-    	</in_commods>
+        <in_commods>
+            <val>freshFuel</val> 
+            <val>freshFuel1</val>
+            <val>freshFuel4</val>
+            <val>freshFuel3</val> 
+            <val>freshFuel2</val> 
+        </in_commods>
         <out_commod>outcommod1</out_commod>
         <libraries>
           <val>extLWR</val>
@@ -60,24 +108,92 @@ Test input for ReactorLite
           <number>1</number>
         </entry>
         <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>   
+        <entry>
           <prototype>Source1</prototype>
           <number>1</number>
         </entry> 
+        <entry>
+          <prototype>Source2</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source3</prototype>
+          <number>1</number>
+        </entry>  
+        <entry>
+          <prototype>Source4</prototype>
+          <number>1</number>
+        </entry>  
       </initialfacilitylist>
       <config> <NullInst/> </config>
     </institution>
   </region>
 
   <recipe>
+    <name>commod_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.6</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.4</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
     <name>commod_recipe1</name>
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>1.5</comp>
+      <comp>1.8</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>98.5</comp>
+      <comp>98.2</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe2</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.204</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.796</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe3</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.656</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.344</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe4</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.1</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.9</comp>
     </nuclide>
   </recipe>
 
