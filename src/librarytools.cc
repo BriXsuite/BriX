@@ -74,6 +74,17 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     }
     inf.close();
 
+    // erases zero beginnings since these zero-zero points are nonphysical
+    if(iso.neutron_prod[0] == 0 || iso.neutron_dest[0] == 0){
+        iso.neutron_prod.erase(iso.neutron_prod.begin());
+        iso.neutron_dest.erase(iso.neutron_dest.begin());
+        iso.BU.erase(iso.BU.begin());
+        iso.fluence.erase(iso.fluence.begin());
+        for(int j = 0; j < iso.iso_vector.size(); j++){
+            iso.iso_vector[j].mass.erase(iso.iso_vector[j].mass.begin());
+        }
+    }
+
     // Assumes derivative if the burnup vector is not increasing
     if(DecreaseChecker(iso.BU)) {
         CumulativeAdd(iso.BU); // Turns it into cumulative vector
