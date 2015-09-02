@@ -137,6 +137,7 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;
 
+    void PrintFluences();
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();
     void Reorder();             // Reorders regions from lowest k to highest

@@ -163,6 +163,15 @@ float RegionInfo::CalcDest() {
                        iso.fluence[ii-1], iso.fluence[ii], fluence_);
 }
 
+// Prints the fluence of each region to terminal
+void ReactorLiteInfo::PrintFluences() {
+    std::cout << library_.name << " fluences: ";
+    for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+        std::cout << region[reg_i].fluence_ << "  ";
+    }
+    std::cout << std::endl;
+}
+
 
 // Updates the fractions of regions, builds new regions if they're empty
 void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifest) {
