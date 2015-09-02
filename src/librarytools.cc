@@ -275,15 +275,24 @@ void BurnFuel(ReactorLiteInfo &reactor_core) {
 void CriticalityBurn(ReactorLiteInfo &reactor_core) {
 // yes this IS old burnupcalc
     float kcore = 1.5;
+    float kcore_prev;
 
     while(kcore < 1) {
         kcore_prev = kcore;
+
+        FluxCalc(reactor_core);
+
+        if(reactor_core.DA_mode_ == 1) {
+            DACalc(reactor_core);
+        }
+
 
 
     }
 
 }
 
+///TODO complete all four modes
 // Determines the flux calculation method and calls flux function accordingly
 void FluxCalc(ReactorLiteInfo &reactor_core) {
     const unsigned int mode = reactor_core.flux_mode_;
@@ -303,8 +312,25 @@ void FluxCalc(ReactorLiteInfo &reactor_core) {
     }
 }
 
+// Calculates the k-value of the core
+float kCalc(ReactorLiteInfo &reactor_core) {
+    unsigned const int regions = reactor_core.region.size();
+    float prod_tot = 0;
+    float dest_tot = 0;
 
+    for(int reg_i = 0; reg_i < regions; reg_i++) {
+        prod_tot += ( (reactor_core.region[reg_i].CalcProd() +
+                       reactor_core.struct_prod_ * reactor_core.region[reg_i].DA)
+                    * reactor_core.region[reg_i].rflux_);
 
+        dest_tot += ( (reactor_core.region[reg_i].CalcDest() +
+                       reactor_core.struct_dest_ * reactor_core.region[reg_i].DA)
+                    * reactor_core.region[reg_i].rflux_);
+    }
+
+    if(dest_tot <= 0) {return 0;}
+    return reactor_core.pnl * prod_tot / dest_tot;
+}
 
 
 

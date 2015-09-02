@@ -123,13 +123,45 @@ void RegionInfo::BuildIso(LibInfo library) {
 
 // Determines the burnup of the region based on its fluence
 float RegionInfo::CalcBU() {
+    if(fluence_ <= 0){return 0;}
+    if(fluence_ >= iso.fluence.back()){return iso.BU.back();}
+
+    unsigned int ii;
+
+    for(ii = 0; iso.fluence[ii] <= fluence_; ii++){}
+
+    return Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence_);
+}
+
+
+// Determines the neutron production of the region based on its fluence
+float RegionInfo::CalcProd() {
+    if(fluence_ <= 0){return 0;}
+    if(fluence_ >= iso.fluence.back()){return iso.neutron_prod.back();}
+
     unsigned int ii;
 
     for(ii = 0; iso.fluence[ii] <= fluence_; ii++){}
 
     if(ii == 0){return 0;}
 
-    return Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence_);
+    return Interpolate(iso.neutron_prod[ii-1], iso.neutron_prod[ii],
+                       iso.fluence[ii-1], iso.fluence[ii], fluence_);
+}
+
+// Determines the neutron destruction of the region based on its fluence
+float RegionInfo::CalcDest() {
+    if(fluence_ <= 0){return 0;}
+    if(fluence_ >= iso.fluence.back()){return iso.neutron_dest.back();}
+
+    unsigned int ii;
+
+    for(ii = 0; iso.fluence[ii] <= fluence_; ii++){}
+
+    if(ii == 0){return 0;}
+
+    return Interpolate(iso.neutron_dest[ii-1], iso.neutron_dest[ii],
+                       iso.fluence[ii-1], iso.fluence[ii], fluence_);
 }
 
 

@@ -20,5 +20,7 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest);
 void DACalc(ReactorLiteInfo &reactor_core);
 void BurnFuel(ReactorLiteInfo &reactor_core);
 void CriticalityBurn(ReactorLiteInfo &reactor_core);
+void FluxCalc(ReactorLiteInfo &reactor_core);
+float kCalc(ReactorLiteInfo &reactor_core);
 
 #endif // LIBRARYTOOLS_H

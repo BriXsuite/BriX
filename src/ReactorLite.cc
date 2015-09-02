@@ -46,6 +46,7 @@ void ReactorLite::Tick() {
     reactor_core_.pnl = nonleakage;
     reactor_core_.fluence_timestep_ = fluence_timestep;
     reactor_core_.flux_mode_ = flux_mode;
+    reactor_core_.DA_mode_ = DA_mode;
 
     // Regions are populated based on reactor parameters
     RegionInfo region;

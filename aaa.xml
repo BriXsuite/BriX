@@ -91,7 +91,7 @@ Test input for ReactorLite
 	<regions>4</regions>
         <thermal_pow>1000</thermal_pow>
         <core_mass>20000</core_mass>
-	<flux_mode>2</flux_mode>
+	<flux_mode>0</flux_mode>
 	<DA_mode>1</DA_mode>
       </ReactorLite>
     </config>

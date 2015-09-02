@@ -101,10 +101,13 @@ public:
 
     float fluence_ = 0;      // Fluence of this region
     float rflux_ = 1;        // Relative flux of region
+    ///TODO DA missing underscore! ffs
     float DA = 1;            // Disadvantage factor
 
     void BuildIso(LibInfo library);
-    float CalcBU();          // Returns the burnup at the fluence
+    float CalcBU();          // Returns the burnup at this fluence
+    float CalcProd();        // Returns the neutron production at this fluence
+    float CalcDest();        // Return the neutron destruction at this fluence
 };
 
 class ReactorLiteInfo {
@@ -117,8 +120,9 @@ public:
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
 
-    unsigned int flux_mode_;         // Flux calculation mode:
+    unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
+    unsigned int DA_mode_;  // Disadvantage factor. 0:OFF, 1:ON
 
     SpatialParamsLite spatial_; // Spatial flux calculation parameters
     DisadvParams DA_;           // DA calculation parameters
