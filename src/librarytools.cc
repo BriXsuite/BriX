@@ -197,14 +197,14 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest) {
 }
 
 // Calculates fuel disadvantage factor
-void DACalc(ReactorLiteInfo &reactor_core){
+void DACalc(ReactorLiteInfo &core){
 // DA = phi_thermal_Mod / phi_thermal_Fuel
 
-    float a = reactor_core.DA_.a; // radius of the fuel rod
-    float b = reactor_core.DA_.b; // radius of the equivalent cell
-    float Sig_sF = reactor_core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
-    float Sig_sM = reactor_core.DA_.mod_Sig_s; //macroscopic scatter CS of moderator
-    float Sig_aM = reactor_core.DA_.mod_Sig_a; // macroscopic abs. CS of moderator
+    float a = core.DA_.a; // radius of the fuel rod
+    float b = core.DA_.b; // radius of the equivalent cell
+    float Sig_sF = core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
+    float Sig_sM = core.DA_.mod_Sig_s; //macroscopic scatter CS of moderator
+    float Sig_aM = core.DA_.mod_Sig_a; // macroscopic abs. CS of moderator
 
     float L_F;      // diffusion length of fuel
     float L_M;      // diffusion length of moderator
@@ -235,9 +235,9 @@ void DACalc(ReactorLiteInfo &reactor_core){
     V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
     V_F = pow(a,2)*3.141592;
 
-    for (int i = 0; i < reactor_core.region.size(); i++) {
+    for (int i = 0; i < core.region.size(); i++) {
 /// INCOMPLETE
-        //Sig_aF = siga_finder(reactor_core.region[i]);
+        //Sig_aF = siga_finder(core.region[i]);
         //cout << "Siga: " << Sig_aF << endl;
 
         Sig_tF = Sig_aF+Sig_sF;
@@ -267,17 +267,17 @@ void DACalc(ReactorLiteInfo &reactor_core){
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
         //cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 
-        ///reactor_core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+        ///core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
     }
 }
 
 // Determines the operating mode of reactor and burns fuel accordingly
-void BurnFuel(ReactorLiteInfo &reactor_core) {
+void BurnFuel(ReactorLiteInfo &core) {
 
-    if(reactor_core.target_CR_ < 0) {
+    if(core.target_CR_ < 0) {
         // Reactor is in stop at k=1 mode
         ///TODO normal fuel burn
-        CriticalityBurn(reactor_core);
+        CriticalityBurn(core);
     } else {
         ///TODO CR burn
     }
@@ -285,7 +285,7 @@ void BurnFuel(ReactorLiteInfo &reactor_core) {
 }
 
 // Burns the fuel based only on criticality condition
-void CriticalityBurn(ReactorLiteInfo &reactor_core) {
+void CriticalityBurn(ReactorLiteInfo &core) {
 // yes this IS old burnupcalc
     float kcore = 1.5;
     float kcore_prev;
@@ -293,42 +293,39 @@ void CriticalityBurn(ReactorLiteInfo &reactor_core) {
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
 
-        FluxCalc(reactor_core); // Update relative flux of regions
+        FluxCalc(core); // Update relative flux of regions
 
         // Calculate DA
-        if(reactor_core.DA_mode_ == 1) {
-            DACalc(reactor_core);
+        if(core.DA_mode_ == 1) {
+            DACalc(core);
         }
-
-        reactor_core.PrintFluences();
 
         // Update fluences
-        for(unsigned int reg_i = 0; reg_i < reactor_core.region.size(); reg_i++) {
-            reactor_core.region[reg_i].fluence_ += reactor_core.region[reg_i].rflux_
-                    * reactor_core.fluence_timestep_ * reactor_core.base_flux_;
+        for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+            core.region[reg_i].fluence_ += core.region[reg_i].rflux_
+                    * core.fluence_timestep_ * core.base_flux_;
         }
 
-        reactor_core.PrintFluences();
-
         // Recalculate k
-        kcore = kCalc(reactor_core);
+        kcore = kCalc(core);
+        std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
     }
 
 }
 
 ///TODO complete all four modes
 // Determines the flux calculation method and calls flux function accordingly
-void FluxCalc(ReactorLiteInfo &reactor_core) {
-    const unsigned int mode = reactor_core.flux_mode_;
+void FluxCalc(ReactorLiteInfo &core) {
+    const unsigned int mode = core.flux_mode_;
 
     if(mode == 0) {
         // Simplest mode, all fluxes are 1
-        for(unsigned int reg_i = 0; reg_i < reactor_core.region.size(); reg_i++){
-            reactor_core.region[reg_i].rflux_ = 1;
+        for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
+            core.region[reg_i].rflux_ = 1;
             return;
         }
     }
-    else if (mode == 1) {}
+    else if (mode == 1) {EqPowPhi(core);}
     else if (mode == 2) {}
     else if (mode == 3) {}
     else {
@@ -337,30 +334,75 @@ void FluxCalc(ReactorLiteInfo &reactor_core) {
 }
 
 // Calculates the k-value of the core
-float kCalc(ReactorLiteInfo &reactor_core) {
-    unsigned const int regions = reactor_core.region.size();
+float kCalc(ReactorLiteInfo &core) {
+    unsigned const int regions = core.region.size();
     float prod_tot = 0;
     float dest_tot = 0;
 
     for(int reg_i = 0; reg_i < regions; reg_i++) {
-            std::cout << "kcalc: " << reactor_core.struct_prod_ << " " << reactor_core.region[reg_i].DA << " " << reactor_core.region[reg_i].rflux_
-                        << std::endl;
-        prod_tot += ( (reactor_core.region[reg_i].CalcProd() +
-                       reactor_core.struct_prod_ * reactor_core.region[reg_i].DA)
-                    * reactor_core.region[reg_i].rflux_);
+        prod_tot += ( (core.region[reg_i].CalcProd() +
+                       core.struct_prod_ * core.region[reg_i].DA)
+                    * core.region[reg_i].rflux_);
 
-        dest_tot += ( (reactor_core.region[reg_i].CalcDest() +
-                       reactor_core.struct_dest_ * reactor_core.region[reg_i].DA)
-                    * reactor_core.region[reg_i].rflux_);
-        std::cout << "prod/dest " << prod_tot << "/" << dest_tot << "     "
-                  << reactor_core.region[reg_i].CalcProd() << std::endl;
+        dest_tot += ( (core.region[reg_i].CalcDest() +
+                       core.struct_dest_ * core.region[reg_i].DA)
+                    * core.region[reg_i].rflux_);
     }
 
     if(dest_tot <= 0) {return 0;}
-    return reactor_core.pnl * prod_tot / dest_tot;
+    return core.pnl * prod_tot / dest_tot;
 }
 
+// Calculates relative fluxes based on the equal power sharing assumption (1)
+void EqPowPhi(ReactorLiteInfo &core) {
+    // Operates on: Regions of equal power have equal burnup
+    // this function updates relative fluxes instead of directly calculating burnup
 
+    float max_fluence = core.fluence_timestep_ * core.base_flux_;
+    float bu_old, bu_next, delta_bu, batch_bu;
+    float batch_fluence;
+    unsigned const int N = core.region.size();
+    float max_flux = -1;
+    float min_flux = 10;
+    unsigned int jk;
+
+    core.region[0].rflux_ = 1;
+
+    // Find the current burnup of the oldest batch
+    bu_old = core.region[0].CalcBU();
+
+    // Find the burnup for next step
+    // This assumes oldest batch will have the least burnup for a given change in fluence
+    bu_next = core.region[0].CalcBU(core.region[0].fluence_ + max_fluence);
+
+    delta_bu = bu_next - bu_old;
+
+    for(int i = 0; i < N; i++){
+        batch_bu = core.region[i].CalcBU();
+
+        // find the discrete points before and after batch bu
+        for(jk = 0; core.region[i].iso.BU[jk] < batch_bu + delta_bu; jk++){}
+
+        batch_fluence = Interpolate(core.region[i].iso.fluence[jk-1], core.region[i].iso.fluence[jk],
+            core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
+
+        core.region[i].rflux_ = (batch_fluence - core.region[i].fluence_)/(max_fluence);
+
+        if(core.region[i].rflux_ > max_flux){max_flux = core.region[i].rflux_;}
+        if(core.region[i].rflux_ < 0){core.region[i].rflux_ = 0;}
+        if(core.region[i].rflux_ < min_flux){min_flux = core.region[i].rflux_;}
+    }
+
+    std::cout << "-flux: ";
+    for(int i = 0; i < N; i++){
+        if(core.region[i].rflux_ == 0){
+            core.region[i].rflux_ = min_flux/max_flux;
+        } else {
+            core.region[i].rflux_ = core.region[i].rflux_ / max_flux;
+        }
+        std::cout << core.region[i].rflux_ << "  ";
+    }
+}
 
 
 

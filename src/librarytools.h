@@ -22,5 +22,6 @@ void BurnFuel(ReactorLiteInfo &reactor_core);
 void CriticalityBurn(ReactorLiteInfo &reactor_core);
 void FluxCalc(ReactorLiteInfo &reactor_core);
 float kCalc(ReactorLiteInfo &reactor_core);
+void EqPowPhi(ReactorLiteInfo &reactor_core);
 
 #endif // LIBRARYTOOLS_H
