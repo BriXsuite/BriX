@@ -74,7 +74,7 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     }
     inf.close();
 
-    // erases zero beginnings since these zero-zero points are nonphysical
+    // Erases zero beginnings since these zero-zero points are nonphysical
     if(iso.neutron_prod[0] == 0 || iso.neutron_dest[0] == 0){
         iso.neutron_prod.erase(iso.neutron_prod.begin());
         iso.neutron_dest.erase(iso.neutron_dest.begin());
@@ -267,12 +267,13 @@ void DACalc(ReactorLiteInfo &reactor_core){
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
         //cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 
-        reactor_core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+        ///reactor_core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
     }
 }
 
 // Determines the operating mode of reactor and burns fuel accordingly
 void BurnFuel(ReactorLiteInfo &reactor_core) {
+
     if(reactor_core.target_CR_ < 0) {
         // Reactor is in stop at k=1 mode
         ///TODO normal fuel burn
@@ -299,15 +300,18 @@ void CriticalityBurn(ReactorLiteInfo &reactor_core) {
             DACalc(reactor_core);
         }
 
+        reactor_core.PrintFluences();
+
         // Update fluences
         for(unsigned int reg_i = 0; reg_i < reactor_core.region.size(); reg_i++) {
             reactor_core.region[reg_i].fluence_ += reactor_core.region[reg_i].rflux_
                     * reactor_core.fluence_timestep_ * reactor_core.base_flux_;
         }
 
+        reactor_core.PrintFluences();
+
         // Recalculate k
         kcore = kCalc(reactor_core);
-        std::cout << "k: " << kcore << std::endl;
     }
 
 }
@@ -339,6 +343,8 @@ float kCalc(ReactorLiteInfo &reactor_core) {
     float dest_tot = 0;
 
     for(int reg_i = 0; reg_i < regions; reg_i++) {
+            std::cout << "kcalc: " << reactor_core.struct_prod_ << " " << reactor_core.region[reg_i].DA << " " << reactor_core.region[reg_i].rflux_
+                        << std::endl;
         prod_tot += ( (reactor_core.region[reg_i].CalcProd() +
                        reactor_core.struct_prod_ * reactor_core.region[reg_i].DA)
                     * reactor_core.region[reg_i].rflux_);
