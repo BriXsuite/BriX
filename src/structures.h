@@ -105,9 +105,12 @@ public:
     float DA = 1;            // Disadvantage factor
 
     void BuildIso(LibInfo library);
-    float CalcBU();          // Returns the burnup at this fluence
-    float CalcProd();        // Returns the neutron production at this fluence
-    float CalcDest();        // Return the neutron destruction at this fluence
+    float CalcBU();                 // Returns the burnup at region fluence
+    float CalcBU(float fluence);    // Returns the burnup at given fluence
+    float CalcProd();               // Returns the neutron production at region fluence
+    float CalcProd(float fluence);  // Returns the neutron production at given fluence
+    float CalcDest();               // Return the neutron destruction at region fluence
+    float CalcDest(float fluence);  // Return the neutron destruction at given fluence
 };
 
 class ReactorLiteInfo {
@@ -135,7 +138,7 @@ public:
     LibInfo library_;
 
     // Regions are populated based on reactor parameters
-    std::vector<RegionInfo> region;
+    std::vector<RegionInfo> region;  // region[0] is oldest
 
     void PrintFluences();
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
