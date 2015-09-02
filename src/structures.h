@@ -119,6 +119,8 @@ public:
     float target_BU_;       // Target burnup in [MWd/kgIHM]
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
+    float fluence_timestep_;// Fluence propagation time step [day]
+    float base_flux_;       // Library base flux
 
     unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
@@ -129,8 +131,6 @@ public:
 
     float struct_prod_ = 0;  // Non-fuel material neutron prod
     float struct_dest_ = 0;  // Non-fuel material neutron dest
-
-    float fluence_timestep_; // Fluence propagation time step [day]
 
     LibInfo library_;
 

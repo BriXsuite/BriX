@@ -133,7 +133,6 @@ float RegionInfo::CalcBU() {
     return Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence_);
 }
 
-
 // Determines the neutron production of the region based on its fluence
 float RegionInfo::CalcProd() {
     if(fluence_ <= 0){return 0;}

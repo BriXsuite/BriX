@@ -265,6 +265,7 @@ void BurnFuel(ReactorLiteInfo &reactor_core) {
     if(reactor_core.target_CR_ < 0) {
         // Reactor is in stop at k=1 mode
         ///TODO normal fuel burn
+        CriticalityBurn(reactor_core);
     } else {
         ///TODO CR burn
     }
@@ -277,17 +278,25 @@ void CriticalityBurn(ReactorLiteInfo &reactor_core) {
     float kcore = 1.5;
     float kcore_prev;
 
-    while(kcore < 1) {
-        kcore_prev = kcore;
+    while(kcore > 1) {
+        kcore_prev = kcore; // Save previous k for final interpolation
 
-        FluxCalc(reactor_core);
+        FluxCalc(reactor_core); // Update relative flux of regions
 
+        // Calculate DA
         if(reactor_core.DA_mode_ == 1) {
             DACalc(reactor_core);
         }
 
+        // Update fluences
+        for(unsigned int reg_i = 0; reg_i < reactor_core.region.size(); reg_i++) {
+            reactor_core.region[reg_i].fluence_ += reactor_core.region[reg_i].rflux_
+                    * reactor_core.fluence_timestep_ * reactor_core.base_flux_;
+        }
 
-
+        // Recalculate k
+        kcore = kCalc(reactor_core);
+        std::cout << "k: " << kcore << std::endl;
     }
 
 }
@@ -326,6 +335,8 @@ float kCalc(ReactorLiteInfo &reactor_core) {
         dest_tot += ( (reactor_core.region[reg_i].CalcDest() +
                        reactor_core.struct_dest_ * reactor_core.region[reg_i].DA)
                     * reactor_core.region[reg_i].rflux_);
+        std::cout << "prod/dest " << prod_tot << "/" << dest_tot << "     "
+                  << reactor_core.region[reg_i].CalcProd() << std::endl;
     }
 
     if(dest_tot <= 0) {return 0;}
