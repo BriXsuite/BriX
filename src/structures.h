@@ -104,6 +104,7 @@ public:
     ///TODO DA missing underscore! ffs
     float DA = 1;            // Disadvantage factor
 
+    void Print();            // Displays info on the region on to terminal
     void BuildIso(LibInfo library);
     float CalcBU();                 // Returns the burnup at region fluence
     float CalcBU(float fluence);    // Returns the burnup at given fluence
@@ -140,6 +141,7 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;  // region[0] is oldest
 
+    void PrintRegionIsos();
     void PrintFluences();
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();

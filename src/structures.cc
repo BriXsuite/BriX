@@ -32,8 +32,13 @@ void IsoInfo::Print(int times) {
         std::cout << BU[i] << " ";
     } std::cout << std::endl;
 
-    std::cout << "----------------------------" << std::endl;
+    std::cout << "------------" << std::endl;
 
+}
+
+void RegionInfo::Print() {
+    std::cout << "Fluence: " << fluence_ << " rFlux: " << rflux_;
+    iso.Print();
 }
 
 
@@ -172,6 +177,15 @@ float RegionInfo::CalcDest(float fluence) {
 
     return Interpolate(iso.neutron_dest[ii-1], iso.neutron_dest[ii],
                        iso.fluence[ii-1], iso.fluence[ii], fluence);
+}
+
+// Prints the iso of each region
+void ReactorLiteInfo::PrintRegionIsos() {
+    std::cout << library_.name << " region isos:" << std::endl;
+    for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+        region[reg_i].Print();;
+    }
+    std::cout << "-------------------------------" << std::endl;
 }
 
 // Prints the fluence of each region to terminal
