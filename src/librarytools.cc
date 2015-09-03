@@ -284,11 +284,12 @@ void BurnFuel(ReactorLiteInfo &core) {
 
 }
 
-// Burns the fuel based only on criticality condition
+// Burns the fuel by advancing fluence based only on criticality
 void CriticalityBurn(ReactorLiteInfo &core) {
 // yes this IS old burnupcalc
     float kcore = 1.5;
     float kcore_prev;
+    unsigned const int regions = core.region.size();
 
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
@@ -301,7 +302,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
         }
 
         // Update fluences
-        for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+        for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
             core.region[reg_i].fluence_ += core.region[reg_i].rflux_
                     * core.fluence_timestep_ * core.base_flux_;
         }
@@ -311,6 +312,13 @@ void CriticalityBurn(ReactorLiteInfo &core) {
         std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
     }
 
+    // Find the discharge fluences
+    for(int reg_i = 0; reg_i < regions; reg_i++) {
+        ///The subtraction here is meh
+        core.region[reg_i].fluence_ = Interpolate((core.region[reg_i].fluence_ -
+                   core.region[reg_i].rflux_ * core.fluence_timestep_ * core.base_flux_),
+                   core.region[reg_i].fluence_, kcore_prev, kcore, 1);
+    }
 }
 
 ///TODO complete all four modes

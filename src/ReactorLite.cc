@@ -144,7 +144,7 @@ void ReactorLite::Tock() {
     reactor_core_.BuildRegionIsos();
 
     ///TODO Call this only at startup (isos have to be built)
-    reactor_core_.Reorder();
+    //reactor_core_.Reorder();
 
     BurnFuel(reactor_core_);
 /*

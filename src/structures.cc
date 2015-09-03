@@ -3,7 +3,7 @@
 // Prints the isotope data to terminal
 void IsoInfo::Print(int times) {
     std::cout << std::endl << "Isotope lib name: " << name << " fraction: "
-              << fraction << std::endl;
+              << fraction << " k[0]: " << neutron_prod[0]/neutron_dest[0] << std::endl;
 
     if (fluence.size() < 1) {
         std::cout << "  !Region not built." << std::endl;
@@ -12,27 +12,27 @@ void IsoInfo::Print(int times) {
 
     if (times > fluence.size()) {times = fluence.size();}
 
-    std::cout << "Fluence: ";
+    std::cout << "  Fluence: ";
     for (int i = 0; i < times; i++) {
         std::cout << fluence[i] << " ";
     } std::cout << std::endl;
 
-    std::cout << "NProd: ";
+    std::cout << "  NProd: ";
     for (int i = 0; i < times; i++) {
         std::cout << neutron_prod[i] << " ";
     } std::cout << std::endl;
 
-    std::cout << "NDest: ";
+    std::cout << "  NDest: ";
     for (int i = 0; i < times; i++) {
         std::cout << neutron_dest[i] << " ";
     } std::cout << std::endl;
 
-    std::cout << "BU: ";
+    std::cout << "  BU: ";
     for (int i = 0; i < times; i++) {
         std::cout << BU[i] << " ";
     } std::cout << std::endl;
 
-    std::cout << "------------" << std::endl;
+    std::cout << "  ------------" << std::endl;
 
 }
 
@@ -252,21 +252,23 @@ void  ReactorLiteInfo::BuildRegionIsos() {
     }
 }
 
+///TODO rework this
 // Reorders regions so that lowest k is at entry zero
 void ReactorLiteInfo::Reorder() {
-    std::vector<RegionInfo> temp_region = region;
+    std::vector<RegionInfo> temp_region = region; ///wrong
     region.clear();
-    float k0, k1;
+    double k0, k1;
 
     while(temp_region.size() != 0) {
         unsigned int lowest = 0;
         for(unsigned int remain_i = 1; remain_i < temp_region.size(); remain_i++) {
             // The first two discrete points are used as opposed to the very first
-            k0 = (region[lowest].iso.neutron_prod[0] + region[lowest].iso.neutron_prod[1])
-                 + (region[lowest].iso.neutron_dest[0] + region[lowest].iso.neutron_dest[1]);
-            k1 = (region[remain_i].iso.neutron_prod[0] + region[remain_i].iso.neutron_prod[1])
-                 + (region[remain_i].iso.neutron_dest[0] + region[remain_i].iso.neutron_dest[1]);
-
+            k0 = region[lowest].iso.neutron_prod[0]
+                 / region[lowest].iso.neutron_dest[0];
+            k1 = (region[remain_i].iso.neutron_prod[0])
+                 / (region[remain_i].iso.neutron_dest[0]);
+            std::cout << region[lowest].iso.neutron_prod[0] << " " << region[lowest].iso.neutron_dest[0] << std::endl;
+            std::cout << "  k: " << k0 << "  " << k1 << std::endl;
             if(k0 > k1) {
                 lowest = remain_i;
             }
