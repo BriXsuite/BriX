@@ -139,6 +139,7 @@ public:
     float struct_dest_ = 0;  // Non-fuel material neutron dest
 
     LibInfo library_;
+    float CR_;
 
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;  // region[0] is oldest

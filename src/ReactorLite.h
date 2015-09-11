@@ -85,7 +85,12 @@ public:
     void AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses);
 
-    /** General Reactor Parameters **/
+    /**** General Reactor Parameters ****/
+
+    #pragma cyclus var {"capacity": "max_inv_size"}
+    cyclus::toolkit::ResourceBuff inventory;
+
+        /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
                       "schematype": "token", \
@@ -102,22 +107,22 @@ public:
                       "doc": "the reactor's burnup & criticality behavior to use"}
     std::vector<std::string> libraries;
 
-    #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
-                      "Interpolation metric", "Interpolation values"], \
-                      "default": {}, \
-                      "uitype": ["oneOrMore", "string", "double"]}
-    std::map<std::string, double> interpol_pairs;
+    #pragma cyclus var {"units": "MWth", \
+                      "userlevel": 0, \
+                      "tooltip": "Thermal heat production."}
+    float thermal_pow;
 
-    #pragma cyclus var {"tooltip": "Number of regions/batches", \
-                      "userlevel": 1, \
-                      "default": 3}
-    int regions;
+    #pragma cyclus var {"units": "kgIHM", \
+                      "userlevel": 0, \
+                      "tooltip": "Total mass of the core."}
+    float core_mass;
 
-    #pragma cyclus var {"tooltip": "Non-leakage probability of the core", \
-                      "doc": "Varies from 0 - 1.", \
+        /** Inputs with defaults **/
+    #pragma cyclus var {"default": 480, \
+                      "units": "months", \
                       "userlevel": 1, \
-                      "default": 0.98}
-    float nonleakage;
+                      "tooltip": "Time before reactor is shutdown after startup."}
+    int reactor_life;
 
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \
@@ -125,8 +130,22 @@ public:
                       "doc": "total maximum inventory size of the reactor"}
     float max_inv_size;
 
-    #pragma cyclus var {"capacity": "max_inv_size"}
-    cyclus::toolkit::ResourceBuff inventory;
+    #pragma cyclus var {"tooltip": "Non-leakage probability of the core", \
+                      "doc": "Varies from 0 - 1.", \
+                      "userlevel": 1, \
+                      "default": 0.98}
+    float nonleakage;
+
+    #pragma cyclus var {"tooltip": "Number of regions/batches", \
+                      "userlevel": 1, \
+                      "default": 3}
+    int regions;
+
+    #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
+                      "Interpolation metric", "Interpolation values"], \
+                      "default": {}, \
+                      "uitype": ["oneOrMore", "string", "double"]}
+    std::map<std::string, double> interpol_pairs;
 
     #pragma cyclus var {"tooltip": "Target burnup, set to zero for forward mode", \
                       "default": 0, \
@@ -139,16 +158,6 @@ public:
                       "userlevel": 1, \
                       "units": "MWd/kgIHM"}
     float target_CR;
-
-    #pragma cyclus var {"units": "MWth", \
-                      "userlevel": 0, \
-                      "tooltip": "Thermal heat production."}
-    float thermal_pow;
-
-    #pragma cyclus var {"units": "kgIHM", \
-                      "userlevel": 0, \
-                      "tooltip": "Total mass of the core."}
-    float core_mass;
 
     #pragma cyclus var {"default": 0.33, \
                       "userlevel": 2, \
@@ -169,6 +178,17 @@ public:
                       "userlevel": 2, \
                       "tooltip": "Structural (nonfuel) material effect calculation. 0:OFF, 1:ON"}
     int struct_mode;
+
+    /** Override Parameters **/
+    #pragma cyclus var {"userlevel": 3, \
+                      "default": 100, \
+                      "tooltip": "The maximum number of cycles. Reactor is shutdown at this number."}
+    int max_cycles;
+
+    #pragma cyclus var {"userlevel": 3, \
+                      "default": 0, \
+                      "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
+    float cycle_length;
 
 
     /** Spatial Method Parameters **/
@@ -257,6 +277,7 @@ private:
     unsigned int cycle_end_;            // Reactor cycle end time
     unsigned int start_time_;           // Reactor start time
     unsigned int outage_remaining_ = 0; // Remaining outage time [in sim timestep] for refueling
+    unsigned int refuels_ = 0;          // Number of times the reactor has been refueled
     float pow_frac_ = 0;
     float month_remainter_ = 0;
     float pow_per_time_ = 0;

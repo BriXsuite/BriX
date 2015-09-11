@@ -147,13 +147,14 @@ void ReactorLite::Tock() {
     reactor_core_.Reorder();
 
     // Record the burnup of the core before cycle begins
-    float BU_prev = reactor_core_.CalcBU();
+    const float BU_prev = reactor_core_.CalcBU();
 
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
 
     // Determine change in core burnup in this step
     float delta_BU = reactor_core_.CalcBU() - BU_prev;
+    if(delta_BU < 0) {delta_BU = 0;}
 
     // Update compositions
     reactor_core_.UpdateComp();
@@ -173,67 +174,44 @@ void ReactorLite::Tock() {
         inventory.Push(manifest[reg_i]);
     }
 
-///////////////////////////////
-/*
-
-    // this is saved and may be used later for steady state calcs during blending
-    //ss_fluence = reactor_core_.region[regions-1].batch_fluence;
-
-
-    // record burnup of the core after cycle ends
-    for(int i = 0; i < reactor_core_.region.size(); i++){
-        BU_next += reactor_core_.region[i].return_BU();
-    }
-    BU_next /= reactor_core_.region.size();
-
-    delta_BU = (BU_next - BU_prev);
-    if(delta_BU < 0){delta_BU = 0;}
-
-    //cycle end update
-    if(cycle_length > 0){
+    // Cycle length update
+    if(cycle_length > 0){ // Cycle length override
         cycle_end_ = ctx->time() + cycle_length;
         pow_over_ =  28. * ((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
-        //if the cycle length is less than 2 the fluence of regions will build up.
-        if(cycle_end_ - ctx->time() < 1){
-            std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
-            std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
-            cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
-        }
-
     } else {
-        //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
-        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
-        pow_over_ =  28*((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
+        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/thermal_pow/28.);
+        pow_over_ =  28*((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
+
+        // If the cycle length is less than 2 the fluence of regions may build up.
+        if(cycle_end_ - ctx->time() < 1){
+            std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results."
+                    << std::endl << " --Cycle length will be manually increased for troubleshooting." << std::endl;
+            cycle_end_ += 3; // This is done to help troubleshoot
+        }
+    }
+
+    // Shutdown check
+    if( (ctx->time() > start_time_ + reactor_life) || (refuels_ >= max_cycles) ) {
+        shutdown_ = true;
+        std::cout << ctx->time() << " Agent " << id() << " shutdown after " << refuels_ << " cycles. Core CR: " << reactor_core_.CR_ << "  BU's: " << std::endl;
+         for(int i = 0; i < reactor_core_.region.size(); i++){
+            const float burnup = reactor_core_.region[i].CalcBU();
+
+            std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
+                // std::cout << " -> U235: " << reactor_core_.region[i].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
+                // + reactor_core_.region[i].comp[942410] << " Total Pu: " << reactor_core_.region[i].comp[942380] + reactor_core_.region[i].comp[942390]
+                // + reactor_core_.region[i].comp[942400] + reactor_core_.region[i].comp[942410] + reactor_core_.region[i].comp[942420] << std::endl;
+            cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
+            cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
+         }
+        //std::cout << std::endl;
     }
 
 
-    //increments the number of times the reactor has been refueled.
-    refuels += 1;
-
-  //shutdown check
-  if( (ctx->time() > start_time_ + reactor_life && record == true) || (refuels >= max_cycles) ){
-    shutdown = true;
-    std::cout << ctx->time() << " Agent " << id() << " shutdown after " << refuels << " cycles. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
-     for(int i = 0; i < reactor_core_.region.size(); i++){
-        int ii;
-        float burnup;
-
-        burnup = reactor_core_.region[i].return_BU();
-        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
-            // std::cout << " -> U235: " << reactor_core_.region[i].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
-            // + reactor_core_.region[i].comp[942410] << " Total Pu: " << reactor_core_.region[i].comp[942380] + reactor_core_.region[i].comp[942390]
-            // + reactor_core_.region[i].comp[942400] + reactor_core_.region[i].comp[942410] + reactor_core_.region[i].comp[942420] << std::endl;
-        cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
-        cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
-     }
-    record = false;
-    //std::cout << std::endl;
-  }
-
-
-  if(shutdown != true && record == true){
-      std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << reactor_core_.region[0].discharge_BU << "  Batch CR: " <<
-            reactor_core_.region[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+    if(shutdown_ != true) {
+        std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4)
+                << reactor_core_.region[0].CalcBU() //TODO << "  Batch CR: " << reactor_core_.region[0].CR_
+                << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
 /*
         std::cout << " -> U235: " << reactor_core_.region[0].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
             + reactor_core_.region[0].comp[942410] << " Total Pu: " << reactor_core_.region[0].comp[942380] + reactor_core_.region[0].comp[942390]
@@ -244,12 +222,14 @@ void ReactorLite::Tock() {
             << " PU240: " << reactor_core_.region[0].comp[942400]  << " PU241: " << reactor_core_.region[0].comp[942410] << std::endl
             << " AM241: " << reactor_core_.region[0].comp[952410]  << " AM243: " << reactor_core_.region[0].comp[952430]
             << " CS135: " << reactor_core_.region[0].comp[551350]  << " CS137: " << reactor_core_.region[0].comp[551370] << std::endl;
-  }
-    cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
-    cyclus::toolkit::RecordTimeSeries("BURNUP", this, reactor_core_.region[0].discharge_BU);
-    cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
-*/
+  */}
 
+    ///TODO move this to material exchange
+    refuels_++;
+
+    cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
+    cyclus::toolkit::RecordTimeSeries("BURNUP", this, reactor_core_.region[0].CalcBU());
+    cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this,  pow_per_time_);
 }
 
 // The reactor requests the amount of regions it needs
