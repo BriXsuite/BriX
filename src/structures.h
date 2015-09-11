@@ -149,7 +149,7 @@ public:
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();
     void Reorder();             // Reorders regions from lowest k to highest
-    void UpdateComp();             // Updates the composition of isotopes in all regions
+    void UpdateComp();          // Updates the composition of isotopes in all regions
     float CalcBU();             // Caluclates the burnup of the core
 };
 

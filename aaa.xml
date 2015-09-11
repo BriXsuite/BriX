@@ -5,7 +5,7 @@ Test input for ReactorLite
 
 <simulation>
   <control>
-    <duration>5</duration>
+    <duration>50</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>

@@ -319,6 +319,92 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
 }
 
 
+// Offer materials
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
+                            cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
+    // Offer either a single batch or a full core based on shutdown condition
+    //std::cout << "RX GetMatBid" << std::endl;
+    using cyclus::BidPortfolio;
+    using cyclus::CapacityConstraint;
+    using cyclus::Converter;
+    using cyclus::Material;
+    using cyclus::Request;
+
+    cyclus::Context* ctx = context();
+    std::set<BidPortfolio<Material>::Ptr> ports;
+    BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+
+    // If its not the end of a cycle dont get rid of your fuel
+    if (ctx->time() != cycle_end_){
+        return ports;
+    }
+
+    // If theres nothing to give dont offer anything
+    if (inventory.count() == 0){return ports;}
+
+    // Put everything in inventory to manifest
+    std::vector<cyclus::Material::Ptr> manifest;
+    manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
+
+    std::vector<Request<Material>*>& requests = commod_requests[out_commod];
+    std::vector<Request<Material>*>::iterator it;
+    for (it = requests.begin(); it != requests.end(); ++it) {
+        Request<Material>* req = *it;
+
+        if (req->commodity() == out_commod) {
+            if(shutdown_ == true) { // Offer all regions
+                for(int i = 0; i < manifest.size(); i++) {
+                    Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[i]->comp());
+                    port->AddBid(req, offer, this);
+                }
+            } else { // Offer the oldest region
+                //std::cout << " placing bid to discharge oldest fuel" << std::endl;
+                Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[0]->comp());
+                port->AddBid(req, offer, this);
+                CapacityConstraint<Material> cc(core_mass/regions);
+                port->AddConstraint(cc);
+
+                if(std::abs(manifest[0]->quantity() - core_mass/regions) > 0.003){
+                    std::cout << "-- Warning! Reactor " << id() << " is discharging a batch with mass "
+                    << core_mass/regions - manifest[0]->quantity()
+                    << " lower than input batch mass. Check upstream facility capacity." << std::endl;
+                }
+            }
+        }
+    }
+    inventory.PushAll(manifest);
+
+    ports.insert(port);
+    //std::cout << "end getmatlbids" << std::endl;
+    return ports;
+}
+
+// Discharging fuel from the reactor
+void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+        std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
+    using cyclus::Material;
+    using cyclus::Trade;
+    //std::cout << "RX getTRADE START" << std::endl;
+    std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
+    //Remove the core loading
+    if(shutdown_ == true) {
+        std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
+        reactor_core_.region.clear();
+        int i = 0;
+        for (it = trades.begin(); it != trades.end(); ++it) {
+            responses.push_back(std::make_pair(*it, discharge[i]));
+            i++;
+        }
+    } else {
+        //Remove the last batch from the core.
+        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
+        reactor_core_.region.erase(reactor_core_.region.begin());
+        for (it = trades.begin(); it != trades.end(); ++it) {
+            responses.push_back(std::make_pair(*it, discharge));
+        }
+    }
+    //std::cout << "RX getTRADE end" << std::endl;
+}
 
 // WARNING! Do not change the following this function!!! This enables your
 // archetype to be dynamically loaded and any alterations will cause your

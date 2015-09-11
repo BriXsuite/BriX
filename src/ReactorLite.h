@@ -85,6 +85,12 @@ public:
     void AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses);
 
+    virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> GetMatlBids(
+                          cyclus::CommodMap<cyclus::Material>::type& commod_requests);
+
+    void GetMatlTrades( const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+            std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses);
+
     /**** General Reactor Parameters ****/
 
     #pragma cyclus var {"capacity": "max_inv_size"}
