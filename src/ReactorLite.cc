@@ -144,53 +144,42 @@ void ReactorLite::Tock() {
     reactor_core_.BuildRegionIsos();
 
     ///TODO Call this only at startup (isos have to be built)
-    //reactor_core_.Reorder();
+    reactor_core_.Reorder();
 
+    // Record the burnup of the core before cycle begins
+    float BU_prev = reactor_core_.CalcBU();
+
+    // Advance fluences accordingly
     BurnFuel(reactor_core_);
-/*
-    //collapse iso's, read struct effects, reorder the fuel regions accordingly
-    CoreBuilder();
 
-    // record the burnup of the core before cycle begins
-    float BU_prev = 0;
-    float BU_next = 0;
-    float delta_BU;
+    // Determine change in core burnup in this step
+    float delta_BU = reactor_core_.CalcBU() - BU_prev;
 
-    for(int i = 0; i < reactor_core_.region.size(); i++){
-        BU_prev += reactor_core_.region[i].return_BU();
-    }
-    BU_prev /= reactor_core_.region.size();
-    //pass fuel bundles to burn-up calc
+    // Update compositions
+    reactor_core_.UpdateComp();
 
-    if(CR_target < 0){
-        burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-    } else if (target_burnup > 0){
-        if(refuels < regions){
-            fuel_library_.target_BU = (float)(refuels+1.)*target_burnup/(float)regions;
-        } else {
-            fuel_library_.target_BU = target_burnup;
+    // Convert into cyclus materials
+    for(int reg_i = 0; reg_i < reactor_core_.region.size(); reg_i++){
+        cyclus::CompMap out_comp;
+        for(std::map<int, float>::iterator c = reactor_core_.region[reg_i].comp.begin();
+                                            c != reactor_core_.region[reg_i].comp.end(); ++c){
+            if(c->second < 0){
+                out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
+            } else {
+                out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
+            }
         }
-        burnupcalc_CR(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-    } else {
-        burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+        manifest[reg_i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
+        inventory.Push(manifest[reg_i]);
     }
+
+///////////////////////////////
+/*
 
     // this is saved and may be used later for steady state calcs during blending
-    ss_fluence = reactor_core_.region[regions-1].batch_fluence;
+    //ss_fluence = reactor_core_.region[regions-1].batch_fluence;
 
-    //convert fuel bundle into materials
-    for(int i = 0; i < reactor_core_.region.size(); i++){
-        cyclus::CompMap out_comp;
-        for(std::map<int, float>::iterator c = reactor_core_.region[i].comp.begin(); c != reactor_core_.region[i].comp.end(); ++c){
-            if(c->second < 0){
-            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
-        } else {
-            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
-        }
-    }
-    manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
-    inventory.Push(manifest[i]);
-  }
+
     // record burnup of the core after cycle ends
     for(int i = 0; i < reactor_core_.region.size(); i++){
         BU_next += reactor_core_.region[i].return_BU();

@@ -126,6 +126,28 @@ void RegionInfo::BuildIso(LibInfo library) {
     }
 }
 
+// Determines the composition of the given isotope at region fluence
+void RegionInfo::UpdateComp() {
+    if(fluence_ <= 0) {return;}
+    if(fluence_ >= iso.fluence.back()) {
+        std::cout << " Warning! Region fluence exceeds library range in composition calculation!"
+                << " Composition will not be updated." << std::endl;
+        return;
+    }
+
+    unsigned int ii;
+
+    for(ii = 1; iso.fluence[ii] <= fluence_; ii++){}
+
+    // Finds the interpolation slope to use for faster interpolation
+    const double slope = (fluence_ - iso.fluence[ii-1]) / (iso.fluence[ii] - iso.fluence[ii-1]);
+
+    for(int iso_i = 0; iso_i < iso.iso_vector.size(); iso_i++) {
+        comp[iso.iso_vector[iso_i].name] = (iso.iso_vector[iso_i].mass[ii-1] +
+                (iso.iso_vector[iso_i].mass[ii] - iso.iso_vector[iso_i].mass[ii-1]) * slope) / 1000;
+    }
+}
+
 // Determines the burnup of the region based on the region fluence
 float RegionInfo::CalcBU() {
     return CalcBU(fluence_);
@@ -133,8 +155,8 @@ float RegionInfo::CalcBU() {
 
 // Determines the burnup of the region based on the given fluence
 float RegionInfo::CalcBU(float fluence) {
-    if(fluence <= 0){return 0;}
-    if(fluence >= iso.fluence.back()){return iso.BU.back();}
+    if(fluence <= 0) {return 0;}
+    if(fluence >= iso.fluence.back()) {return iso.BU.back();}
 
     unsigned int ii;
 
@@ -275,6 +297,13 @@ void ReactorLiteInfo::Reorder() {
         }
         region.push_back(temp_region[lowest]);
         temp_region.erase(temp_region.begin() + lowest);
+    }
+}
+
+// Updates the composition of isotopes in all regions
+void ReactorLiteInfo::UpdateComp() {
+    for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+        region[reg_i].UpdateComp();
     }
 }
 

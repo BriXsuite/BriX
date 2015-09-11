@@ -95,7 +95,8 @@ public:
     float mass_;             // Mass of region, gets assigned at first tick
 
     IsoInfo iso;             // Collapsed, isoinfo for region
-    std::map<int,float> fractions; // Name and fraction of each isotope
+    std::map<int,float> fractions; // Name and fraction of each isotope for iso building
+    std::map<int,float> comp; // Composition of the region
 
     unsigned int location_;  // Radial location of region, 1:center
 
@@ -106,6 +107,7 @@ public:
 
     void Print();            // Displays info on the region on to terminal
     void BuildIso(LibInfo library);
+    void UpdateComp();             // Updates the composition of isotopes at region fluence
     float CalcBU();                 // Returns the burnup at region fluence
     float CalcBU(float fluence);    // Returns the burnup at given fluence
     float CalcProd();               // Returns the neutron production at region fluence
@@ -146,6 +148,7 @@ public:
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
     void BuildRegionIsos();
     void Reorder();             // Reorders regions from lowest k to highest
+    void UpdateComp();             // Updates the composition of isotopes in all regions
     float CalcBU();             // Caluclates the burnup of the core
 };
 
