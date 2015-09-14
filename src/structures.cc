@@ -305,13 +305,14 @@ void ReactorLiteInfo::UpdateComp() {
     }
 }
 
-// Returns the total burnup of the core by going through each batch
+// Returns the total burnup (per mass) of the core by going through each batch
 float ReactorLiteInfo::CalcBU() {
+    unsigned const int regions = region.size();
     float total_BU = 0;
-    for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         total_BU += region[reg_i].CalcBU();
     }
-    return total_BU;
+    return total_BU / regions;
 }
 
 
