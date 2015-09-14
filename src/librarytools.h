@@ -1,0 +1,27 @@
+#ifndef LIBRARYTOOLS_H
+#define LIBRARYTOOLS_H
+
+#include <string>
+#include <sstream>
+#include <cmath>
+
+#include "structures.h"
+#include "generaltools.h"
+
+// Used for DACalc
+#include <boost/math/special_functions/bessel.hpp>
+
+using namespace std;
+
+void LibraryReader(string library_name, string library_path, LibInfo &library);
+void IsoBuilder(string library_path, IsoInfo &iso);
+float FluxFinder(string library_path);
+void StructReader(string library_path, float &struct_prod, float &struct_dest);
+void DACalc(ReactorLiteInfo &reactor_core);
+void BurnFuel(ReactorLiteInfo &reactor_core);
+void CriticalityBurn(ReactorLiteInfo &reactor_core);
+void FluxCalc(ReactorLiteInfo &reactor_core);
+float kCalc(ReactorLiteInfo &reactor_core);
+void EqPowPhi(ReactorLiteInfo &reactor_core);
+
+#endif // LIBRARYTOOLS_H

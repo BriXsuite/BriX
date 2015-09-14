@@ -4,3 +4,6 @@
 TAPE9.INP
 *.INP~
 *.txt~
+*.sqlite
+build/
+src_old/
