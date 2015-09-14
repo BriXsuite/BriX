@@ -274,10 +274,9 @@ void  ReactorLiteInfo::BuildRegionIsos() {
     }
 }
 
-///TODO rework this
 // Reorders regions so that lowest k is at entry zero
 void ReactorLiteInfo::Reorder() {
-    std::vector<RegionInfo> temp_region = region; ///wrong
+    std::vector<RegionInfo> temp_region = region;
     region.clear();
     double k0, k1;
 
@@ -285,12 +284,11 @@ void ReactorLiteInfo::Reorder() {
         unsigned int lowest = 0;
         for(unsigned int remain_i = 1; remain_i < temp_region.size(); remain_i++) {
             // The first two discrete points are used as opposed to the very first
-            k0 = region[lowest].iso.neutron_prod[0]
-                 / region[lowest].iso.neutron_dest[0];
-            k1 = (region[remain_i].iso.neutron_prod[0])
-                 / (region[remain_i].iso.neutron_dest[0]);
-            std::cout << region[lowest].iso.neutron_prod[0] << " " << region[lowest].iso.neutron_dest[0] << std::endl;
-            std::cout << "  k: " << k0 << "  " << k1 << std::endl;
+            k0 = temp_region[lowest].iso.neutron_prod[0]
+                 / temp_region[lowest].iso.neutron_dest[0];
+            k1 = (temp_region[remain_i].iso.neutron_prod[0])
+                 / (temp_region[remain_i].iso.neutron_dest[0]);
+
             if(k0 > k1) {
                 lowest = remain_i;
             }

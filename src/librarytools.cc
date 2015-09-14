@@ -309,7 +309,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 
         // Recalculate k
         kcore = kCalc(core);
-        std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
+        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
     }
 
     // Find the discharge fluences
@@ -401,14 +401,12 @@ void EqPowPhi(ReactorLiteInfo &core) {
         if(core.region[i].rflux_ < min_flux){min_flux = core.region[i].rflux_;}
     }
 
-    std::cout << "-flux: ";
     for(int i = 0; i < N; i++){
         if(core.region[i].rflux_ == 0){
             core.region[i].rflux_ = min_flux/max_flux;
         } else {
             core.region[i].rflux_ = core.region[i].rflux_ / max_flux;
         }
-        std::cout << core.region[i].rflux_ << "  ";
     }
 }
 

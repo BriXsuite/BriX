@@ -90,7 +90,6 @@ void ReactorLite::Tick() {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
-    std::cout << "Inventory: " << inventory.quantity() << std::endl;
     if (inventory.count() == 0) {return;}
     if (shutdown_) {return;}
 
@@ -361,6 +360,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
                 //std::cout << " placing bid to discharge oldest fuel" << std::endl;
                 Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[0]->comp());
                 port->AddBid(req, offer, this);
+                ///TODO read from real mass
                 CapacityConstraint<Material> cc(core_mass/regions);
                 port->AddConstraint(cc);
 
@@ -396,7 +396,7 @@ void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Materia
             i++;
         }
     } else {
-        //Remove the last batch from the core.
+        // Remove the last batch from the core.
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
         reactor_core_.region.erase(reactor_core_.region.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
