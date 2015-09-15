@@ -309,7 +309,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 
         // Recalculate k
         kcore = kCalc(core);
-        std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
+        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
     }
 
     // Find the discharge fluences
