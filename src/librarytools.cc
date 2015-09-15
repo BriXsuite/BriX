@@ -309,7 +309,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 
         // Recalculate k
         kcore = kCalc(core);
-        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << RegionCRCalc(core, 0) << std::endl;
+        std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
     }
 
     // Find the discharge fluences
@@ -440,7 +440,7 @@ void InvProdPhi(ReactorLiteInfo &core) {
     }
 }
 
-// Determines the CR for reg_i
+// Calculates the CR for reg_i
 float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i) {
     // reg_i is the region number, starting from zero
 
@@ -490,6 +490,7 @@ float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i) {
 
     fissile = Interpolate(fissile0, fissile1, core.region[reg_i].iso.fluence[ii-1],
                           core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+
     if(FP > 0){
         CR = (FP+fissile-ini_fissile)/FP;
     } else {
@@ -501,8 +502,72 @@ float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i) {
     return CR;
 }
 
+// Calculates the CR for the core
+float CoreCRCalc(ReactorLiteInfo &core) {
+    float FP = 0, FP0 = 0, FP1 = 0;
+    float fissile = 0, fissile0 = 0, fissile1 = 0;
+    float ini_fissile = 0;
+    float CR;
+    unsigned int ii, ZZ;
 
+    const unsigned int CR_upper = 160, CR_lower = 70;
 
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+        // Find the discrete point index for region fluence
+        if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+            ii = core.region[reg_i].iso.fluence.size()-1;
+        } else {
+            for(ii = 1; core.region[reg_i].iso.fluence[ii] < core.region[reg_i].fluence_; ii++){}
+        }
+
+        for(int iso_j = 0; iso_j < core.region[reg_i].iso.iso_vector.size(); iso_j++) {
+            // Convert name to mass number
+            ZZ = core.region[reg_i].iso.iso_vector[iso_j].name;
+            ZZ = ZZ % 10000;
+            ZZ /= 10;
+
+            // Add up the FP
+            if(ZZ < CR_upper && ZZ > CR_lower) {
+                // Interpolation will be done at the end
+                FP0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                FP1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+            }
+
+            // Add up fissiles
+            for(int fis = 0; fis < core.CR_fissile_.size(); fis++){
+                if(core.region[reg_i].iso.iso_vector[iso_j].name == core.CR_fissile_[fis]){
+                    fissile0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                    fissile1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+
+                    ini_fissile += core.region[reg_i].iso.iso_vector[iso_j].mass[0];
+                }
+            }
+        }
+
+        // recycling variable FP0 here to check greater than zero
+        FP0 = Interpolate(FP0, FP1, core.region[reg_i].iso.fluence[ii-1],
+                          core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+        if(FP0 > 0) {FP += FP0;}
+
+        fissile += Interpolate(fissile0, fissile1, core.region[reg_i].iso.fluence[ii-1],
+                              core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+
+        FP0 = 0;
+        FP1 = 0;
+        fissile0 = 0;
+        fissile1 = 0;
+    }
+
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        CR  = 0;
+    }
+
+    if(CR < 0){CR = 0;}
+
+    return CR;
+}
 
 
 
