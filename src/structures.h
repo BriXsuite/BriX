@@ -107,7 +107,7 @@ public:
 
     void Print();            // Displays info on the region on to terminal
     void BuildIso(LibInfo library);
-    void UpdateComp();             // Updates the composition of isotopes at region fluence
+    void UpdateComp();              // Updates the composition of isotopes at region fluence
     float CalcBU();                 // Returns the burnup at region fluence
     float CalcBU(float fluence);    // Returns the burnup at given fluence
     float CalcProd();               // Returns the neutron production at region fluence
@@ -127,6 +127,7 @@ public:
     float pnl;              // Nonleakage probability
     float fluence_timestep_;// Fluence propagation time step [day]
     float base_flux_;       // Library base flux
+    std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
 
     unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial

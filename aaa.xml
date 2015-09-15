@@ -107,6 +107,20 @@ Test input for ReactorLite
         <nonleakage>0.9751</nonleakage>
 	<DA_mode>0</DA_mode>
 	<fluence_timestep>10000000</fluence_timestep>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
+            <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
       </ReactorLite>
     </config>
   </facility>

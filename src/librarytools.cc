@@ -309,11 +309,11 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 
         // Recalculate k
         kcore = kCalc(core);
-        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
+        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << RegionCRCalc(core, 0) << std::endl;
     }
 
     // Find the discharge fluences
-    for(int reg_i = 0; reg_i < regions; reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         ///The subtraction here is meh
         core.region[reg_i].fluence_ = Interpolate((core.region[reg_i].fluence_ -
                    core.region[reg_i].rflux_ * core.fluence_timestep_ * core.base_flux_),
@@ -327,7 +327,7 @@ void FluxCalc(ReactorLiteInfo &core) {
     unsigned int mode = core.flux_mode_;
 
     // Override to mode=zero if any region exceeds library limit
-    for(int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
         if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
             mode = 0;
         }
@@ -340,9 +340,9 @@ void FluxCalc(ReactorLiteInfo &core) {
             return;
         }
     }
-    else if (mode == 1) {EqPowPhi(core);}
-    else if (mode == 2) {InvProdPhi(core);}
-    else if (mode == 3) {}
+    else if(mode == 1) {EqPowPhi(core);}
+    else if(mode == 2) {InvProdPhi(core);}
+    else if(mode == 3) {}
     else {
         std::cout << "  Error in flux mode input for ReactorLite" << std::endl;
     }
@@ -354,7 +354,7 @@ float kCalc(ReactorLiteInfo &core) {
     float prod_tot = 0;
     float dest_tot = 0;
 
-    for(int reg_i = 0; reg_i < regions; reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         prod_tot += ( (core.region[reg_i].CalcProd() +
                        core.struct_prod_ * core.region[reg_i].DA)
                     * core.region[reg_i].rflux_);
@@ -392,24 +392,24 @@ void EqPowPhi(ReactorLiteInfo &core) {
 
     delta_bu = bu_next - bu_old;
 
-    for(int i = 0; i < N; i++){
+    for(int unsigned i = 0; i < N; i++) {
         batch_bu = core.region[i].CalcBU();
 
         // find the discrete points before and after batch bu
         for(jk = 0; core.region[i].iso.BU[jk] < batch_bu + delta_bu; jk++){}
 
         batch_fluence = Interpolate(core.region[i].iso.fluence[jk-1], core.region[i].iso.fluence[jk],
-            core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
+                core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
 
         core.region[i].rflux_ = (batch_fluence - core.region[i].fluence_)/(max_fluence);
 
-        if(core.region[i].rflux_ > max_flux){max_flux = core.region[i].rflux_;}
-        if(core.region[i].rflux_ < 0){core.region[i].rflux_ = 0;}
-        if(core.region[i].rflux_ < min_flux){min_flux = core.region[i].rflux_;}
+        if(core.region[i].rflux_ > max_flux) {max_flux = core.region[i].rflux_;}
+        if(core.region[i].rflux_ < 0) {core.region[i].rflux_ = 0;}
+        if(core.region[i].rflux_ < min_flux) {min_flux = core.region[i].rflux_;}
     }
 
-    for(int i = 0; i < N; i++){
-        if(core.region[i].rflux_ == 0){
+    for(int unsigned i = 0; i < N; i++) {
+        if(core.region[i].rflux_ == 0) {
             core.region[i].rflux_ = min_flux/max_flux;
         } else {
             core.region[i].rflux_ = core.region[i].rflux_ / max_flux;
@@ -425,7 +425,7 @@ void InvProdPhi(ReactorLiteInfo &core) {
     double maxphi = 0;
 
     // Find the inverse of neutron production
-    for(int reg_i = 0; reg_i < core.region.size(); reg_i++){
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
 
         core.region[reg_i].rflux_ = 1. / core.region[reg_i].CalcProd();
 
@@ -435,13 +435,71 @@ void InvProdPhi(ReactorLiteInfo &core) {
     }
 
     // Normalize all the flux values
-    for(int reg_i = 0; reg_i < core.region.size(); reg_i++){
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
         core.region[reg_i].rflux_ /= maxphi;
     }
 }
 
+// Determines the CR for reg_i
+float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i) {
+    // reg_i is the region number, starting from zero
 
+    float FP = 0, FP0 = 0, FP1 = 0;
+    float fissile = 0, fissile0 = 0, fissile1 = 0;
+    float ini_fissile = 0;
+    float CR;
+    unsigned int ii, ZZ;
 
+    const unsigned int CR_upper = 160, CR_lower = 70;
+
+    // Find the discrete point index for region fluence
+    if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+        ii = core.region[reg_i].iso.fluence.size()-1;
+    } else {
+        for(ii = 1; core.region[reg_i].iso.fluence[ii] < core.region[reg_i].fluence_; ii++){}
+    }
+
+    for(int iso_j = 0; iso_j < core.region[reg_i].iso.iso_vector.size(); iso_j++) {
+        // Convert name to mass number
+        ZZ = core.region[reg_i].iso.iso_vector[iso_j].name;
+        ZZ = ZZ % 10000;
+        ZZ /= 10;
+
+        // Add up the FP
+        if(ZZ < CR_upper && ZZ > CR_lower) {
+            // Interpolation will be done at the end
+            FP0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+            FP1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+        }
+
+        // Add up fissiles
+        for(int fis = 0; fis < core.CR_fissile_.size(); fis++){
+            if(core.region[reg_i].iso.iso_vector[iso_j].name == core.CR_fissile_[fis]){
+                fissile0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                fissile1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+
+                ini_fissile += core.region[reg_i].iso.iso_vector[iso_j].mass[0];
+            }
+        }
+    }
+
+    // recycling variable FP0 here to check greater than zero
+    FP0 = Interpolate(FP0, FP1, core.region[reg_i].iso.fluence[ii-1],
+                      core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+    if(FP0 > 0) {FP += FP0;}
+
+    fissile = Interpolate(fissile0, fissile1, core.region[reg_i].iso.fluence[ii-1],
+                          core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        CR  = 0;
+    }
+
+    if(CR < 0){CR = 0;}
+
+    return CR;
+}
 
 
 
