@@ -324,7 +324,14 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 ///TODO complete all four modes
 // Determines the flux calculation method and calls flux function accordingly
 void FluxCalc(ReactorLiteInfo &core) {
-    const unsigned int mode = core.flux_mode_;
+    unsigned int mode = core.flux_mode_;
+
+    // Override to mode=zero if any region exceeds library limit
+    for(int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+        if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+            mode = 0;
+        }
+    }
 
     if(mode == 0) {
         // Simplest mode, all fluxes are 1
@@ -334,7 +341,7 @@ void FluxCalc(ReactorLiteInfo &core) {
         }
     }
     else if (mode == 1) {EqPowPhi(core);}
-    else if (mode == 2) {}
+    else if (mode == 2) {InvProdPhi(core);}
     else if (mode == 3) {}
     else {
         std::cout << "  Error in flux mode input for ReactorLite" << std::endl;
@@ -410,8 +417,28 @@ void EqPowPhi(ReactorLiteInfo &core) {
     }
 }
 
+// Calculates relative fluxes based on the inverse of neutron production assumption (2)
+void InvProdPhi(ReactorLiteInfo &core) {
+// Updates the rflux of each region in core.region
+// Assumes the flux of a region is proportional to the inverse neutron prod rate
 
+    double maxphi = 0;
 
+    // Find the inverse of neutron production
+    for(int reg_i = 0; reg_i < core.region.size(); reg_i++){
+
+        core.region[reg_i].rflux_ = 1. / core.region[reg_i].CalcProd();
+
+        if(maxphi < core.region[reg_i].rflux_){
+            maxphi = core.region[reg_i].rflux_;
+        }
+    }
+
+    // Normalize all the flux values
+    for(int reg_i = 0; reg_i < core.region.size(); reg_i++){
+        core.region[reg_i].rflux_ /= maxphi;
+    }
+}
 
 
 
