@@ -26,5 +26,6 @@ void EqPowPhi(ReactorLiteInfo &reactor_core);
 void InvProdPhi(ReactorLiteInfo &core);
 float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i);
 float CoreCRCalc(ReactorLiteInfo &core);
+float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux);
 
 #endif // LIBRARYTOOLS_H

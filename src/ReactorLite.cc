@@ -49,6 +49,7 @@ void ReactorLite::Tick() {
                                           "/share/brix/libraries/" + libraries[0]);
     reactor_core_.flux_mode_ = flux_mode;
     reactor_core_.DA_mode_ = DA_mode;
+    reactor_core_.abs_flux_tol_ = abs_flux_tol;
     for(int iso_i = 0; iso_i < CR_fissile.size(); iso_i++) {
             reactor_core_.CR_fissile_.push_back(std::stoi(CR_fissile[iso_i]));
     }
