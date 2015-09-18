@@ -97,7 +97,7 @@ void ReactorLite::Tock() {
     cyclus::Context* ctx = context();
     // Checks the state of the reactor and sets up the power output for the timestep
     if (outage_remaining_ > 1) {
-        // Reactor still in outage
+        // Reactor still in outage return zero power and reduce outage timer
         outage_remaining_--;
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, 0);
         return;
@@ -106,19 +106,23 @@ void ReactorLite::Tock() {
         pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
         outage_remaining_ = 0;
     } else {
+        // normal reactor operation
         if (ctx->time() != cycle_end_) {
             cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*thermal_efficiency);
             return;
         } else {
+            // if outage ends during same month as shutdown
             if (pow_over_ + outage_time_ < 28.) {
                 pow_frac_ = 1. - outage_time_/28.;
                 pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
+            // if outage ends the month following the shutdown
             } else if (pow_over_ + outage_time_ >= 28. && pow_over_ + outage_time_ < 56.) {
                 pow_frac_ = 2 - (pow_over_ + outage_time_)/28.;
                 float x = pow_over_/28.;
                 outage_remaining_ = 1;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
+            // if outage lasts more than the month after shutdown
             } else {
                 outage_remaining_ = 2;
                 while (pow_over_ + outage_time_ > outage_remaining_*28.) {
