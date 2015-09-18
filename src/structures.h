@@ -138,6 +138,7 @@ public:
     float struct_prod_ = 0;  // Non-fuel material neutron prod
     float struct_dest_ = 0;  // Non-fuel material neutron dest
 
+    std::vector<std::string> libraries_;
     LibInfo library_;
     float CR_;
 
@@ -153,6 +154,7 @@ public:
     float CalcBU();             // Caluclates the burnup of the core
 };
 
+extern std::map<std::string, LibInfo> global_libs;
 #endif // STRUCTURES_H_INCLUDED
 
 

@@ -24,7 +24,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-	<capacity>5000000</capacity>
+	<capacity>500000000000000</capacity>
       </Source>
     </config>
   </facility>
@@ -35,7 +35,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-	<capacity>350000.0</capacity>
+	<capacity>35000000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -46,7 +46,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-	<capacity>350000.0</capacity>
+	<capacity>3500000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -57,7 +57,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-	<capacity>350000.0</capacity>
+	<capacity>350000000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -68,7 +68,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel4</commod>
         <recipe_name>commod_recipe4</recipe_name>
-	<capacity>350000.0</capacity>
+	<capacity>3500000000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -80,7 +80,7 @@ Test input for ReactorLite
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>1000000.0</capacity>
+        <capacity>10000000000000000000000000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -119,7 +119,7 @@ Test input for ReactorLite
       <initialfacilitylist>    
         <entry>
           <prototype>BriX_ReactorLite</prototype>
-          <number>1</number>
+          <number>10</number>
         </entry>
         <entry>
           <prototype>Source</prototype>

@@ -1,5 +1,6 @@
 #include "generaltools.h"
 
+
 // returns true if data is increasing (cumulative sum)
 bool DecreaseChecker(vector<float> &data) {
 

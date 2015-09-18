@@ -1,5 +1,7 @@
 #include "structures.h"
 
+
+std::map<std::string, LibInfo> global_libs;
 // Prints the isotope data to terminal
 void IsoInfo::Print(int times) {
     std::cout << std::endl << "Isotope lib name: " << name << " fraction: "
@@ -41,17 +43,14 @@ void RegionInfo::Print() {
     iso.Print();
 }
 
-
 // Updates the iso in that region with the fraction
 void RegionInfo::BuildIso(LibInfo library) {
 
     iso.name = 0; // Zero represents a collapsed iso and not a specific isotope
-
-    // For every available isotope in the library
+    //For every available isotope in the library
     for (unsigned int lib_i = 0; lib_i < library.all_iso.size(); lib_i++) {
         // Save the name of the current library isotope
         unsigned const int iso_name = library.all_iso[lib_i].name;
-
         //
         if (library.all_iso[lib_i].iso_vector.size() > 0) {
             if (iso.fluence.size() < 1) {
@@ -203,7 +202,7 @@ float RegionInfo::CalcDest(float fluence) {
 
 // Prints the iso of each region
 void ReactorLiteInfo::PrintRegionIsos() {
-    std::cout << library_.name << " region isos:" << std::endl;
+    std::cout << global_libs[libraries_[0]].name << " region isos:" << std::endl;
     for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
         region[reg_i].Print();;
     }
@@ -212,7 +211,7 @@ void ReactorLiteInfo::PrintRegionIsos() {
 
 // Prints the fluence of each region to terminal
 void ReactorLiteInfo::PrintFluences() {
-    std::cout << library_.name << " fluences: ";
+    std::cout << global_libs[libraries_[0]].name << " fluences: ";
     for(unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
         std::cout << region[reg_i].fluence_ << "  ";
     }
@@ -254,8 +253,8 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
                 comp_iso = pyne::nucname::zzaaam(it->first);
 
                 // For each isotope in all_iso
-                for (int j = 0; j < library_.all_iso.size(); j++) {
-                    if (library_.all_iso[j].name == comp_iso) {
+                for (int j = 0; j < global_libs[libraries_[0]].all_iso.size(); j++) {
+                    if (global_libs[libraries_[0]].all_iso[j].name == comp_iso) {
                         region[i].fractions[comp_iso] = it->second;
                     }
                 }
@@ -269,7 +268,7 @@ void  ReactorLiteInfo::BuildRegionIsos() {
     for (unsigned int reg_i = 0; reg_i < region.size(); reg_i++) {
         // If a region has zero fluence the iso must not be built yet
         if (region[reg_i].fluence_ == 0) {
-            region[reg_i].BuildIso(library_);
+            region[reg_i].BuildIso(global_libs[libraries_[0]]);
         }
     }
 }

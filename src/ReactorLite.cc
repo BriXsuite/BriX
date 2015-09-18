@@ -1,4 +1,5 @@
 #include "ReactorLite.h"
+#include "structures.h"
 
 namespace reactorlite {
 
@@ -13,6 +14,8 @@ ReactorLite::ReactorLite(cyclus::Context* ctx) : cyclus::Facility(ctx) {
 std::string ReactorLite::str() {
   return Facility::str();
 }
+
+//std::map<std::string, LibInfo> global_libs;
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
@@ -31,13 +34,18 @@ void ReactorLite::Tick() {
         " reactor (ID:" << id() << ") starting up - target burnup = " <<
         target_burnup << std::endl;
     }
-
-    LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
-                          + libraries[0], reactor_core_.library_);
-
+    bool lib_test = false;
+    if(global_libs.count(libraries[0]) > 0){
+        lib_test = true;
+    }
+    if(lib_test == false){
+        std::cout << "bahs" << std::endl;
+        LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
+                          + libraries[0], global_libs[libraries[0]]);
+    }
     /// Library blending goes here, start by checking if libraries.size() > 1
-
     // Record relevant user data in reactor_core_
+    reactor_core_.libraries_ = libraries;
     reactor_core_.regions_ = regions;
     reactor_core_.thermal_pow_ = thermal_pow;
     reactor_core_.core_mass_ = core_mass;
@@ -85,14 +93,12 @@ void ReactorLite::Tick() {
         reactor_core_.DA_.mod_Sig_s = DA_mod_Sig_s;
         reactor_core_.DA_.fuel_Sig_s = DA_fuel_Sig_s;
     }
-
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
     if (inventory.count() == 0) {return;}
     if (shutdown_) {return;}
-
 
     cyclus::Context* ctx = context();
     // Checks the state of the reactor and sets up the power output for the timestep
@@ -143,18 +149,13 @@ void ReactorLite::Tock() {
 
     // Update the fractions in reactor_core_ with the popped manifest fractions
     reactor_core_.UpdateFractions(manifest);
-
     reactor_core_.BuildRegionIsos();
-
     ///TODO Call this only at startup (isos have to be built)
     reactor_core_.Reorder();
-
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
-
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
-
     // Determine change in core burnup in this step
     float delta_BU = reactor_core_.CalcBU() - BU_prev;
     if(delta_BU < 0) {delta_BU = 0;}
