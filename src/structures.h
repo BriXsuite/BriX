@@ -100,7 +100,7 @@ public:
 
     unsigned int location_;  // Radial location of region, 1:center
 
-    float fluence_ = 0;      // Fluence of this region
+    float fluence_ = 0;      // Fluence of this region [n/cm2]
     float rflux_ = 1;        // Relative flux of region
     ///TODO DA missing underscore! ffs
     float DA = 1;            // Disadvantage factor
@@ -125,7 +125,7 @@ public:
     float target_BU_;       // Target burnup in [MWd/kgIHM]
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
-    float fluence_timestep_;// Fluence propagation time step [day]
+    float fluence_timestep_;// Fluence propagation time step [second]
     float base_flux_;       // Library base flux
     std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
 

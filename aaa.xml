@@ -5,7 +5,7 @@ Test input for ReactorLite
 
 <simulation>
   <control>
-    <duration>2</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -102,10 +102,10 @@ Test input for ReactorLite
         </libraries>
 	<regions>3</regions>
         <thermal_pow>4000</thermal_pow>
-        <core_mass>112000</core_mass>
+        <core_mass>127000</core_mass>
 	<flux_mode>0</flux_mode>
         <nonleakage>0.9751</nonleakage>
-	<DA_mode>0</DA_mode>
+	<DA_mode>1</DA_mode>
 	<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
             <val>902250</val>

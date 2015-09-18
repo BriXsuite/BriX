@@ -179,7 +179,7 @@ public:
                       "tooltip": "Structural (nonfuel) material effect calculation. 0:OFF, 1:ON"}
     int struct_mode;
 
-    #pragma cyclus var {"default": 1, \
+    #pragma cyclus var {"default": 0.001, \
                       "userlevel": 3, \
                       "tooltip": "The absolute flux calculation convergence requirement."}
     float abs_flux_tol;

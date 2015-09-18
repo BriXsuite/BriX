@@ -44,7 +44,7 @@ void ReactorLite::Tick() {
     reactor_core_.target_BU_ = target_burnup;
     reactor_core_.target_CR_ = target_CR;
     reactor_core_.pnl = nonleakage;
-    reactor_core_.fluence_timestep_ = fluence_timestep;
+    reactor_core_.fluence_timestep_ = fluence_timestep * 86400;
     reactor_core_.base_flux_ = FluxFinder(cyclus::Env::GetInstallPath() +
                                           "/share/brix/libraries/" + libraries[0]);
     reactor_core_.flux_mode_ = flux_mode;

@@ -294,7 +294,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
 
-        FluxCalc(core); // Update relative flux of regions
+        FluxCalc(core);     // Update relative flux of regions
 
         // Calculate DA
         if(core.DA_mode_ == 1) {
@@ -310,7 +310,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
                     * core.fluence_timestep_ * abs_flux;
         }
 
-        // Recalculate k
+        // Calculate k
         kcore = kCalc(core);
         //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
     }
@@ -574,11 +574,11 @@ float CoreCRCalc(ReactorLiteInfo &core) {
 
 // Determines the absolute flux (correct flux units) for the timestep
 float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux) {
-    std::cout << "ABSFLUXCALC BEGIN" << std::endl;
+    //std::cout << "ABSFLUXCALC BEGIN" << std::endl;
     const int regions = core.regions_;
     const float power = core.thermal_pow_;          // [MWth]
     const float mass = core.core_mass_;
-    const float timestep = core.fluence_timestep_;  // [day]
+    const float timestep = core.fluence_timestep_/86400.;  // [day]
     const float BU_prev = core.CalcBU();            // [MWd/kgIHM]
     float BU_next, delta_BU;
     float fluence;
@@ -586,32 +586,32 @@ float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux) {
     float abs_flux1 = abs_flux, abs_flux2 = abs_flux*2, temp_flux;
     unsigned int times = 0;
 
-    // Determine first data point
-    while(step_power1 < power) {
+    delta_BU = core.CalcBU(abs_flux1) - BU_prev;
+    step_power1 = delta_BU * mass / timestep;
+
+    // Quickly scale up flux if abs_flux was too far off
+    while(step_power1 < power && times < 20) {
         abs_flux1 *= 1.5;
 
         delta_BU = core.CalcBU(abs_flux1) - BU_prev;
         step_power1 = delta_BU * mass / timestep;
+
+        times++;
     }
+    times = 0;
     abs_flux2 = abs_flux1 * 0.9;
-
-    std::cout << " flux1: " << abs_flux1 << "  power1: " << step_power1 << std::endl;
-
-    //abs_flux2 = abs_flux1 * step_power1 / power;
 
     while(times < 20) {
         // Determine the timestep power implied by the current abs_flux
         delta_BU = core.CalcBU(abs_flux2) - BU_prev;
-        step_power2 = delta_BU * mass / timestep;
+        step_power2 = delta_BU * mass / timestep;   // [MWd/kgIHM] * [kgIHM] / [day]
 
-        std::cout << " flux2: " << abs_flux2 << "  power2: " << step_power2 << std::endl;
+        if(std::abs(step_power2 - power)/power < core.abs_flux_tol_) {
+            return abs_flux2;
+        }
 
-        if(std::abs(step_power2-power) < core.abs_flux_tol_) {return abs_flux2;}
-
-        temp_flux = Interpolate(abs_flux1, abs_flux2, step_power1, step_power2, power);
-        if(temp_flux <= 0) {temp_flux = abs_flux2 * 1.05;}
-
-        std::cout << " temp: " << temp_flux << std::endl;
+        temp_flux = abs_flux2 + (power - step_power2)*(abs_flux2-abs_flux1)/(step_power2-step_power1);
+        if(temp_flux < 0) {temp_flux = 0;}
 
         step_power1 = step_power2;
         abs_flux1 = abs_flux2;
@@ -619,6 +619,8 @@ float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux) {
 
         times++;
     }
+
+    std::cout << "Warning! Absolute flux calculation reached max iterations!" << std::endl;
     return abs_flux2;
 }
 

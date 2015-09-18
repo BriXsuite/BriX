@@ -320,15 +320,16 @@ float ReactorLiteInfo::CalcBU() {
 
 // Returns the burnup if the reactor at given flux; using rflux_ and fluence_timestep_
 float ReactorLiteInfo::CalcBU(float flux) {
+    unsigned const int regions = region.size();
     float burnup = 0;
     float fluence;
 
-    for(int reg_i = 0; reg_i < region.size(); reg_i++) {
+    for(int reg_i = 0; reg_i < regions; reg_i++) {
         fluence = region[reg_i].fluence_ + (region[reg_i].rflux_ * flux * fluence_timestep_);
         burnup += region[reg_i].CalcBU(fluence);
     }
 
-    return burnup;
+    return burnup / regions;
 }
 
 
