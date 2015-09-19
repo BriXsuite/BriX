@@ -204,6 +204,16 @@ float RegionInfo::CalcDest(float fluence) {
                        iso.fluence[ii-1], iso.fluence[ii], fluence);
 }
 
+// Determines nu Sig_f [cm-1] from neutron production rate
+float RegionInfo::CalcNuSigf() {
+    return CalcProd() * 0.01097;
+}
+
+// Determines Sig_a [cm-1] from neutron destruction rate
+float RegionInfo::CalcSiga() {
+    return CalcDest() * 0.01097;
+}
+
 // Prints the iso of each region
 void ReactorLiteInfo::PrintRegionIsos() {
     std::cout << library_.name << " region isos:" << std::endl;

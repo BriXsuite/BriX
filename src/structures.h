@@ -114,6 +114,8 @@ public:
     float CalcProd(float fluence);  // Returns the neutron production at given fluence
     float CalcDest();               // Return the neutron destruction at region fluence
     float CalcDest(float fluence);  // Return the neutron destruction at given fluence
+    float CalcNuSigf();             // Return the macroscopic fission cross section [cm-1] times nu
+    float CalcSiga();               // Return the macroscopic absorption cross section [cm-1]
 };
 
 class ReactorLiteInfo {
