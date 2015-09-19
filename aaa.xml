@@ -100,13 +100,13 @@ Test input for ReactorLite
         <libraries>
           <val>extLWR</val>
         </libraries>
-	<regions>3</regions>
+				<regions>3</regions>
         <thermal_pow>4000</thermal_pow>
         <core_mass>127000</core_mass>
-	<flux_mode>0</flux_mode>
+				<flux_mode>1</flux_mode>
         <nonleakage>0.9751</nonleakage>
-	<DA_mode>1</DA_mode>
-	<fluence_timestep>100</fluence_timestep>
+				<DA_mode>1</DA_mode>
+				<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>

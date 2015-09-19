@@ -236,9 +236,7 @@ void DACalc(ReactorLiteInfo &core){
     V_F = pow(a,2)*3.141592;
 
     for (int i = 0; i < core.region.size(); i++) {
-/// INCOMPLETE
-        //Sig_aF = siga_finder(core.region[i]);
-        //cout << "Siga: " << Sig_aF << endl;
+        Sig_aF = core.region[i].CalcSiga();
 
         Sig_tF = Sig_aF+Sig_sF;
         Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
@@ -265,9 +263,8 @@ void DACalc(ReactorLiteInfo &core){
         E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) * boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) * boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
 
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-        //cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 
-        ///core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+        core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
     }
 }
 
