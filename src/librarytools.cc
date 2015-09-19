@@ -200,40 +200,33 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest) {
 void DACalc(ReactorLiteInfo &core){
 // DA = phi_thermal_Mod / phi_thermal_Fuel
 
-    float a = core.DA_.a; // radius of the fuel rod
-    float b = core.DA_.b; // radius of the equivalent cell
-    float Sig_sF = core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
-    float Sig_sM = core.DA_.mod_Sig_s; //macroscopic scatter CS of moderator
-    float Sig_aM = core.DA_.mod_Sig_a; // macroscopic abs. CS of moderator
+    const float a = core.DA_.a;               // radius of the fuel rod
+    const float b = core.DA_.b;               // radius of the equivalent cell
+    const float Sig_sF = core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
+    const float Sig_sM = core.DA_.mod_Sig_s;  //macroscopic scatter CS of moderator
+    const float Sig_aM = core.DA_.mod_Sig_a;  // macroscopic abs. CS of moderator
 
-    float L_F;      // diffusion length of fuel
-    float L_M;      // diffusion length of moderator
-    float Sig_aF;   // macroscopic abs. CS of fuel
-    float V_F;      // volume of fuel
-    float V_M;      // volume of moderator
-    float Sig_trF;  // macroscopic transport CS of fuel
-    float Sig_trM;  // macroscopic transport CS of moderator
-    float Sig_tF;   // macroscopic total CS of fuel
-    float Sig_tM;   //macroscopic total CS of moderator
-    float D_F;      // diffusion coef. of fuel
-    float D_M;      // diffusion coef. of moderator
-    float A_F;      // A number of fuel
-    float A_M;      // A number of moderator
-    float x, y, z;  // calculated equivalent dimensions
+    float Sig_trF;          // macroscopic transport CS of fuel
+    float Sig_tF;           // macroscopic total CS of fuel
+    float D_F;              // diffusion coef. of fuel
+    const float A_F = 235;  // A number of fuel
+    float L_F;              // diffusion length of fuel
+    float Sig_aF;           // macroscopic abs. CS of fuel
+    const float V_F = pow(a,2)*3.141592; // Fuel volume
+
+    const float Sig_tM = Sig_aM + Sig_sM;       // Macroscopic total CS of moderator
+    const float A_M = 18;                       // A of moderator
+    const float Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;  // macroscopic transport CS of moderator
+    const float D_M = 1 / (3 * Sig_trM);        // diffusion coef. of moderator
+    const float L_M = sqrt(D_M/Sig_aM);         // diffusion length of moderator
+    const float V_M = pow(b,2)*3.141592 - V_F;  // volume of moderator
+
+    // calculated equivalent dimensions
+    float x;
+    const float y = a/L_M;
+    const float z = b/L_M;
     float F, E;     // lattice functions
     float f;        // flux of fuel divided by total flux(fuel+moderator)
-
-    // Moderator calculations
-    Sig_tM = Sig_aM + Sig_sM;
-    A_F = 235;
-    A_M = 18;
-    Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;
-    D_M = 1 / (3 * Sig_trM);
-    L_M = sqrt(D_M/Sig_aM);
-    y = a/L_M;
-    z = b/L_M;
-    V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
-    V_F = pow(a,2)*3.141592;
 
     for (int i = 0; i < core.region.size(); i++) {
         Sig_aF = core.region[i].CalcSiga();
@@ -244,23 +237,13 @@ void DACalc(ReactorLiteInfo &core){
         L_F = sqrt(D_F/Sig_aF);
         x = a/L_F;
 
-        /*****book example***
-        //should get f = 0.8272 with the values below
-        //Lamarsh pg.316
-        a=1.02;
-        b=14.3;
-        x=0.658;
-        y=0.0173;
-        z=0.242;
-        V_M=195.6;
-        V_F=1;
-        Sig_aM=0.0002728;
-        Sig_aF=0.3668;
-        ******************/
-
         F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
 
-        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) * boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) * boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
+        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) *
+                boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
+                boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
+                boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) *
+                                                    boost::math::cyl_bessel_i(1, y)));
 
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
 
