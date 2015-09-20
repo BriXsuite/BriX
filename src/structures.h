@@ -2,9 +2,8 @@
 #define STRUCTURES_H_INCLUDED
 
 #include <utility>
-
-#include "cyclus.h"
 #include "generaltools.h"
+#include "cyclus.h"
 
 #include <string>
 #include <cmath>
