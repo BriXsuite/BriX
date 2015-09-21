@@ -380,11 +380,13 @@ void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Materia
         std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
+    cyclus::Context* ctx = context();
     //std::cout << "RX getTRADE START" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     for (it = trades.begin(); it != trades.end(); ++it) {
-        decay_times_.erase(decay_times_.begin());
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(storage_.Pop());
+        discharge->Decay(ctx->time());
+        decay_times_.erase(decay_times_.begin());
         responses.push_back(std::make_pair(*it, discharge));
     }
     //std::cout << "RX getTRADE end" << std::endl;

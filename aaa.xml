@@ -8,6 +8,7 @@ Test input for ReactorLite
     <duration>620</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
+    <decay>lazy</decay>
   </control>
 
   <archetypes>
@@ -119,7 +120,7 @@ Test input for ReactorLite
       <initialfacilitylist>    
         <entry>
           <prototype>BriX_ReactorLite</prototype>
-          <number>5</number>
+          <number>1</number>
         </entry>
         <entry>
           <prototype>Source</prototype>
