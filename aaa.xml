@@ -81,7 +81,7 @@ Test input for ReactorLite
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>5000.0</capacity>
+        <capacity>5000000000000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -120,7 +120,7 @@ Test input for ReactorLite
       <initialfacilitylist>    
         <entry>
           <prototype>BriX_ReactorLite</prototype>
-          <number>1</number>
+          <number>10</number>
         </entry>
         <entry>
           <prototype>Source</prototype>
