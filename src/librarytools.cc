@@ -1,8 +1,8 @@
 #include "librarytools.h"
 
+
 // Reads from library in library_path to build all_iso
 void LibraryReader(string library_name, string library_path, LibInfo &library) {
-
     library.name = library_name;
 
     ifstream inf (library_path + "/manifest.txt"); // Opens manifest file
@@ -290,17 +290,13 @@ void CriticalityBurn(ReactorLiteInfo &core) {
     float kcore = 1.5;
     float kcore_prev;
     unsigned const int regions = core.region.size();
-
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
-
         FluxCalc(core); // Update relative flux of regions
-
         // Calculate DA
         if(core.DA_mode_ == 1) {
             DACalc(core);
         }
-
         // Update fluences
         for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
             core.region[reg_i].fluence_ += core.region[reg_i].rflux_
@@ -311,7 +307,6 @@ void CriticalityBurn(ReactorLiteInfo &core) {
         kcore = kCalc(core);
         //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
     }
-
     // Find the discharge fluences
     for(int reg_i = 0; reg_i < regions; reg_i++) {
         ///The subtraction here is meh
@@ -325,13 +320,13 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 // Determines the flux calculation method and calls flux function accordingly
 void FluxCalc(ReactorLiteInfo &core) {
     const unsigned int mode = core.flux_mode_;
-
     if(mode == 0) {
         // Simplest mode, all fluxes are 1
         for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
             core.region[reg_i].rflux_ = 1;
             return;
         }
+
     }
     else if (mode == 1) {EqPowPhi(core);}
     else if (mode == 2) {}
@@ -373,7 +368,6 @@ void EqPowPhi(ReactorLiteInfo &core) {
     float max_flux = -1;
     float min_flux = 10;
     unsigned int jk;
-
     core.region[0].rflux_ = 1;
 
     // Find the current burnup of the oldest batch
@@ -382,20 +376,16 @@ void EqPowPhi(ReactorLiteInfo &core) {
     // Find the burnup for next step
     // This assumes oldest batch will have the least burnup for a given change in fluence
     bu_next = core.region[0].CalcBU(core.region[0].fluence_ + max_fluence);
-
     delta_bu = bu_next - bu_old;
-
     for(int i = 0; i < N; i++){
         batch_bu = core.region[i].CalcBU();
-
         // find the discrete points before and after batch bu
-        for(jk = 0; core.region[i].iso.BU[jk] < batch_bu + delta_bu; jk++){}
+        for(jk = 0; core.region[i].iso.BU[jk] < batch_bu + delta_bu; jk++){
+        }
 
         batch_fluence = Interpolate(core.region[i].iso.fluence[jk-1], core.region[i].iso.fluence[jk],
-            core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
-
+                                    core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
         core.region[i].rflux_ = (batch_fluence - core.region[i].fluence_)/(max_fluence);
-
         if(core.region[i].rflux_ > max_flux){max_flux = core.region[i].rflux_;}
         if(core.region[i].rflux_ < 0){core.region[i].rflux_ = 0;}
         if(core.region[i].rflux_ < min_flux){min_flux = core.region[i].rflux_;}

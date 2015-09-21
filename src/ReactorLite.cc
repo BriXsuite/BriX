@@ -1,4 +1,5 @@
 #include "ReactorLite.h"
+#include "structures.h"
 
 namespace reactorlite {
 
@@ -14,12 +15,26 @@ std::string ReactorLite::str() {
   return Facility::str();
 }
 
+//std::map<std::string, LibInfo> global_libs;
+
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
-    if (start_time_ != ctx->time()) {return;}
+    if(cycle_end_ == ctx->time() && inventory.count() > 0){
+        reactor_core_.region.erase(reactor_core_.region.begin());
+        storage_.Push(inventory.Pop());
+        decay_times_.push_back(0);
+    }
+    if(shutdown_ == true){
+        for(int i = 0; i < inventory.count(); i++){
+            decay_times_.push_back(0);
+        }
+        reactor_core_.region.clear();
+        storage_.PushAll(inventory.PopN(inventory.count()));
+    }
 
+    if (start_time_ != ctx->time()) {return;}
     // First tick, the rest of Tick() is like a constructor
 
     // Inform user reactor is starting up
@@ -31,13 +46,17 @@ void ReactorLite::Tick() {
         " reactor (ID:" << id() << ") starting up - target burnup = " <<
         target_burnup << std::endl;
     }
-
-    LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
-                          + libraries[0], reactor_core_.library_);
-
+    bool lib_test = false;
+    if(global_libs.count(libraries[0]) > 0){
+        lib_test = true;
+    }
+    if(lib_test == false){
+        LibraryReader(libraries[0], cyclus::Env::GetInstallPath() + "/share/brix/libraries/"\
+                          + libraries[0], global_libs[libraries[0]]);
+    }
     /// Library blending goes here, start by checking if libraries.size() > 1
-
     // Record relevant user data in reactor_core_
+    reactor_core_.libraries_ = libraries;
     reactor_core_.regions_ = regions;
     reactor_core_.thermal_pow_ = thermal_pow;
     reactor_core_.core_mass_ = core_mass;
@@ -85,19 +104,19 @@ void ReactorLite::Tick() {
         reactor_core_.DA_.mod_Sig_s = DA_mod_Sig_s;
         reactor_core_.DA_.fuel_Sig_s = DA_fuel_Sig_s;
     }
-
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void ReactorLite::Tock() {
-    if (inventory.count() == 0) {return;}
+    if (inventory.count() == 0) {UpdateStorage(decay_times_); return;}
     if (shutdown_) {return;}
-
-
     cyclus::Context* ctx = context();
+
+    // Updates storage times.
+    UpdateStorage(decay_times_);
     // Checks the state of the reactor and sets up the power output for the timestep
     if (outage_remaining_ > 1) {
-        // Reactor still in outage
+        // Reactor still in outage return zero power and reduce outage timer
         outage_remaining_--;
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, 0);
         return;
@@ -106,19 +125,23 @@ void ReactorLite::Tock() {
         pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
         outage_remaining_ = 0;
     } else {
+        // normal reactor operation
         if (ctx->time() != cycle_end_) {
             cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*thermal_efficiency);
             return;
         } else {
+            // if outage ends during same month as shutdown
             if (pow_over_ + outage_time_ < 28.) {
                 pow_frac_ = 1. - outage_time_/28.;
                 pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
+            // if outage ends the month following the shutdown
             } else if (pow_over_ + outage_time_ >= 28. && pow_over_ + outage_time_ < 56.) {
                 pow_frac_ = 2 - (pow_over_ + outage_time_)/28.;
                 float x = pow_over_/28.;
                 outage_remaining_ = 1;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
+            // if outage lasts more than the month after shutdown
             } else {
                 outage_remaining_ = 2;
                 while (pow_over_ + outage_time_ > outage_remaining_*28.) {
@@ -139,18 +162,13 @@ void ReactorLite::Tock() {
 
     // Update the fractions in reactor_core_ with the popped manifest fractions
     reactor_core_.UpdateFractions(manifest);
-
     reactor_core_.BuildRegionIsos();
-
     ///TODO Call this only at startup (isos have to be built)
     reactor_core_.Reorder();
-
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
-
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
-
     // Determine change in core burnup in this step
     float delta_BU = reactor_core_.CalcBU() - BU_prev;
     if(delta_BU < 0) {delta_BU = 0;}
@@ -197,9 +215,6 @@ void ReactorLite::Tock() {
             const float burnup = reactor_core_.region[i].CalcBU();
 
             std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
-                // std::cout << " -> U235: " << reactor_core_.region[i].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
-                // + reactor_core_.region[i].comp[942410] << " Total Pu: " << reactor_core_.region[i].comp[942380] + reactor_core_.region[i].comp[942390]
-                // + reactor_core_.region[i].comp[942400] + reactor_core_.region[i].comp[942410] + reactor_core_.region[i].comp[942420] << std::endl;
             cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
             cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
          }
@@ -211,17 +226,7 @@ void ReactorLite::Tock() {
         std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4)
                 << reactor_core_.region[0].CalcBU() //TODO << "  Batch CR: " << reactor_core_.region[0].CR_
                 << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
-/*
-        std::cout << " -> U235: " << reactor_core_.region[0].comp[922350] << " Fissile Pu: " << reactor_core_.region[0].comp[942390]
-            + reactor_core_.region[0].comp[942410] << " Total Pu: " << reactor_core_.region[0].comp[942380] + reactor_core_.region[0].comp[942390]
-            + reactor_core_.region[0].comp[942400] + reactor_core_.region[0].comp[942410] + reactor_core_.region[0].comp[942420] << std::endl;
-
-        std::cout << " U238: " << reactor_core_.region[0].comp[922380] << " U236: " << reactor_core_.region[0].comp[922360]
-            << " PU238: " << reactor_core_.region[0].comp[942380]  << " PU239: " << reactor_core_.region[0].comp[942390]
-            << " PU240: " << reactor_core_.region[0].comp[942400]  << " PU241: " << reactor_core_.region[0].comp[942410] << std::endl
-            << " AM241: " << reactor_core_.region[0].comp[952410]  << " AM243: " << reactor_core_.region[0].comp[952430]
-            << " CS135: " << reactor_core_.region[0].comp[551350]  << " CS137: " << reactor_core_.region[0].comp[551370] << std::endl;
-  */}
+    }
 
     ///TODO move this to material exchange
     refuels_++;
@@ -334,46 +339,37 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
     BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
 
     // If its not the end of a cycle dont get rid of your fuel
-    if (ctx->time() != cycle_end_){
+    if (ctx->time() != cycle_end_ && storage_.count() == 0){
         return ports;
     }
 
     // If theres nothing to give dont offer anything
-    if (inventory.count() == 0){return ports;}
+    if (storage_.count() == 0){return ports;}
 
     // Put everything in inventory to manifest
     std::vector<cyclus::Material::Ptr> manifest;
-    manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
+    //removing materials from storage
+    int pop_number = 0;
+    for(int i = 0; i < decay_times_.size(); i++){
+        if(decay_times_[i] > decay_time_){
+            pop_number++;
+        }
+    }
+    manifest = cyclus::ResCast<Material>(storage_.PopN(storage_.count()));
 
+    //Offering Bids
     std::vector<Request<Material>*>& requests = commod_requests[out_commod];
     std::vector<Request<Material>*>::iterator it;
     for (it = requests.begin(); it != requests.end(); ++it) {
         Request<Material>* req = *it;
-
         if (req->commodity() == out_commod) {
-            if(shutdown_ == true) { // Offer all regions
-                for(int i = 0; i < manifest.size(); i++) {
-                    Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[i]->comp());
-                    port->AddBid(req, offer, this);
-                }
-            } else { // Offer the oldest region
-                //std::cout << " placing bid to discharge oldest fuel" << std::endl;
-                Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[0]->comp());
+            for(int i = 0; i < pop_number; i++) {
+                Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[i]->comp());
                 port->AddBid(req, offer, this);
-                ///TODO read from real mass
-                CapacityConstraint<Material> cc(core_mass/regions);
-                port->AddConstraint(cc);
-
-                if(std::abs(manifest[0]->quantity() - core_mass/regions) > 0.003){
-                    std::cout << "-- Warning! Reactor " << id() << " is discharging a batch with mass "
-                    << core_mass/regions - manifest[0]->quantity()
-                    << " lower than input batch mass. Check upstream facility capacity." << std::endl;
-                }
             }
         }
     }
-    inventory.PushAll(manifest);
-
+    storage_.PushAll(manifest);
     ports.insert(port);
     //std::cout << "end getmatlbids" << std::endl;
     return ports;
@@ -384,24 +380,14 @@ void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Materia
         std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
+    cyclus::Context* ctx = context();
     //std::cout << "RX getTRADE START" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-    //Remove the core loading
-    if(shutdown_ == true) {
-        std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
-        reactor_core_.region.clear();
-        int i = 0;
-        for (it = trades.begin(); it != trades.end(); ++it) {
-            responses.push_back(std::make_pair(*it, discharge[i]));
-            i++;
-        }
-    } else {
-        // Remove the last batch from the core.
-        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
-        reactor_core_.region.erase(reactor_core_.region.begin());
-        for (it = trades.begin(); it != trades.end(); ++it) {
-            responses.push_back(std::make_pair(*it, discharge));
-        }
+    for (it = trades.begin(); it != trades.end(); ++it) {
+        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(storage_.Pop());
+        discharge->Decay(ctx->time());
+        decay_times_.erase(decay_times_.begin());
+        responses.push_back(std::make_pair(*it, discharge));
     }
     //std::cout << "RX getTRADE end" << std::endl;
 }
