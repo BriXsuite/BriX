@@ -11,6 +11,10 @@
 // Used for DACalc
 #include <boost/math/special_functions/bessel.hpp>
 
+// Used for spatial flux calc
+//#include <eigen3/Eigen/Core>
+//#include <eigen3/Eigen/Eigenvalues>
+
 using namespace std;
 
 void LibraryReader(string library_name, string library_path, LibInfo &library);
@@ -27,5 +31,6 @@ void InvProdPhi(ReactorLiteInfo &core);
 float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i);
 float CoreCRCalc(ReactorLiteInfo &core);
 float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux);
+void SpatialPhi(ReactorLiteInfo &core);
 
 #endif // LIBRARYTOOLS_H
