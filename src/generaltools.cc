@@ -28,3 +28,8 @@ void CumulativeAdd(vector<float> &data) {
 float Interpolate(const float y0, const float y1, const float x0, const float x1, const float x) {
     return y0 + (y1 - y0)*(x - x0)/(x1 - x0);
 }
+
+void UpdateStorage(std::vector<int> &decay_times){
+    for(int i = 0; i < decay_times.size(); i++){decay_times[i]++;}
+    return;
+}

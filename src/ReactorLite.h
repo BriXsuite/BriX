@@ -184,6 +184,14 @@ public:
                       "tooltip": "The absolute flux calculation convergence requirement."}
     float abs_flux_tol;
 
+    #pragma cyclus var {"default": 72, \
+                        "userlevel": 2, \
+                        "tooltip": "The amount of time fuel will spend in onsite storage", \
+                        "doc": "This is the amount of time that the fuel will spend in onsite storage. This time period is used to allow short lived "  \
+                                "fission products and actinides to decay away and make the fuel less radioactive. This effects the fuel composition as " \
+                                "well as its current thermal power"}
+    int decay_time_;
+
     /** Override Parameters **/
     #pragma cyclus var {"userlevel": 3, \
                       "default": 100, \
@@ -290,6 +298,8 @@ public:
 
 private:
     ReactorLiteInfo reactor_core_;      // Class that holds core info on reactor
+    cyclus::toolkit::ResourceBuff storage_;
+    std::vector<int> decay_times_;
     bool shutdown_ = false;              // State of the reactor
     unsigned int cycle_end_;            // Reactor cycle end time
     unsigned int start_time_;           // Reactor start time

@@ -2,9 +2,8 @@
 #define STRUCTURES_H_INCLUDED
 
 #include <utility>
-
-#include "cyclus.h"
 #include "generaltools.h"
+#include "cyclus.h"
 
 #include <string>
 #include <cmath>
@@ -143,6 +142,7 @@ public:
     float struct_prod_ = 0;  // Non-fuel material neutron prod
     float struct_dest_ = 0;  // Non-fuel material neutron dest
 
+    std::vector<std::string> libraries_;
     LibInfo library_;
     float CR_;
 
@@ -159,6 +159,7 @@ public:
     float CalcBU(float flux);   // Calculates the burnup if reactor at given flux
 };
 
+extern std::map<std::string, LibInfo> global_libs;
 #endif // STRUCTURES_H_INCLUDED
 
 
