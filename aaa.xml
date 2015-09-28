@@ -5,10 +5,10 @@ Test input for ReactorLite
 
 <simulation>
   <control>
-    <duration>620</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
-    <decay>lazy</decay>
+    <decay>never</decay>
   </control>
 
   <archetypes>
@@ -120,7 +120,7 @@ Test input for ReactorLite
       <initialfacilitylist>    
         <entry>
           <prototype>BriX_ReactorLite</prototype>
-          <number>10</number>
+          <number>1</number>
         </entry>
         <entry>
           <prototype>Source</prototype>
