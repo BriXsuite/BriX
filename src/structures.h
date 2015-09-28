@@ -91,7 +91,7 @@ struct LibInfo {
 // Information about the fuel region
 class RegionInfo {
 public:
-    float mass_;             // Mass of region, gets assigned at first tick
+    float mass_;             // Mass of region, equal for all regions in ReactorLite
 
     IsoInfo iso;             // Collapsed, isoinfo for region
     std::map<int,float> fractions; // Name and fraction of each isotope for iso building
@@ -99,20 +99,22 @@ public:
 
     unsigned int location_;  // Radial location of region, 1:center
 
-    float fluence_ = 0;      // Fluence of this region
+    float fluence_ = 0;      // Fluence of this region [n/cm2]
     float rflux_ = 1;        // Relative flux of region
     ///TODO DA missing underscore! ffs
     float DA = 1;            // Disadvantage factor
 
     void Print();            // Displays info on the region on to terminal
     void BuildIso(LibInfo library);
-    void UpdateComp();             // Updates the composition of isotopes at region fluence
-    float CalcBU();                 // Returns the burnup at region fluence
-    float CalcBU(float fluence);    // Returns the burnup at given fluence
+    void UpdateComp();              // Updates the composition of isotopes at region fluence
+    float CalcBU();                 // Returns the burnup/mass at region fluence
+    float CalcBU(float fluence);    // Returns the burnup/mass at given fluence
     float CalcProd();               // Returns the neutron production at region fluence
     float CalcProd(float fluence);  // Returns the neutron production at given fluence
     float CalcDest();               // Return the neutron destruction at region fluence
     float CalcDest(float fluence);  // Return the neutron destruction at given fluence
+    float CalcNuSigf();             // Return the macroscopic fission cross section [cm-1] times nu
+    float CalcSiga();               // Return the macroscopic absorption cross section [cm-1]
 };
 
 class ReactorLiteInfo {
@@ -124,8 +126,11 @@ public:
     float target_BU_;       // Target burnup in [MWd/kgIHM]
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
-    float fluence_timestep_;// Fluence propagation time step [day]
-    float base_flux_;       // Library base flux
+    float fluence_timestep_;// Fluence propagation time step [second]
+    float base_flux_;       // Library base flux or last cycle flux
+    std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
+
+    float abs_flux_tol_;    // Convergence tolerance for absolute flux calculation
 
     unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
@@ -150,7 +155,8 @@ public:
     void BuildRegionIsos();
     void Reorder();             // Reorders regions from lowest k to highest
     void UpdateComp();          // Updates the composition of isotopes in all regions
-    float CalcBU();             // Caluclates the burnup of the core
+    float CalcBU();             // Calculates the burnup of the core
+    float CalcBU(float flux);   // Calculates the burnup if reactor at given flux
 };
 
 extern std::map<std::string, LibInfo> global_libs;

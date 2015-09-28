@@ -63,11 +63,15 @@ void ReactorLite::Tick() {
     reactor_core_.target_BU_ = target_burnup;
     reactor_core_.target_CR_ = target_CR;
     reactor_core_.pnl = nonleakage;
-    reactor_core_.fluence_timestep_ = fluence_timestep;
+    reactor_core_.fluence_timestep_ = fluence_timestep * 86400;
     reactor_core_.base_flux_ = FluxFinder(cyclus::Env::GetInstallPath() +
                                           "/share/brix/libraries/" + libraries[0]);
     reactor_core_.flux_mode_ = flux_mode;
     reactor_core_.DA_mode_ = DA_mode;
+    reactor_core_.abs_flux_tol_ = abs_flux_tol;
+    for(int iso_i = 0; iso_i < CR_fissile.size(); iso_i++) {
+            reactor_core_.CR_fissile_.push_back(std::stoi(CR_fissile[iso_i]));
+    }
 
     // Regions are populated based on reactor parameters
     RegionInfo region;

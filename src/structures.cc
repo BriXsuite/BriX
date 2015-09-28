@@ -147,21 +147,24 @@ void RegionInfo::UpdateComp() {
     }
 }
 
-// Determines the burnup of the region based on the region fluence
+// Determines the burnup/mass of the region based on the region fluence
 float RegionInfo::CalcBU() {
     return CalcBU(fluence_);
 }
 
-// Determines the burnup of the region based on the given fluence
+// Determines the burnup/mass of the region based on the given fluence
 float RegionInfo::CalcBU(float fluence) {
     if(fluence <= 0) {return 0;}
     if(fluence >= iso.fluence.back()) {return iso.BU.back();}
 
     unsigned int ii;
+    float burnup;
 
     for(ii = 1; iso.fluence[ii] <= fluence; ii++){}
 
-    return Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence);
+    burnup = Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence);
+    if(burnup < 0) {return 0;}
+    return burnup;
 }
 
 // Determines the neutron production of the region based on region fluence
@@ -198,6 +201,16 @@ float RegionInfo::CalcDest(float fluence) {
 
     return Interpolate(iso.neutron_dest[ii-1], iso.neutron_dest[ii],
                        iso.fluence[ii-1], iso.fluence[ii], fluence);
+}
+
+// Determines nu Sig_f [cm-1] from neutron production rate
+float RegionInfo::CalcNuSigf() {
+    return CalcProd() * 0.01097;
+}
+
+// Determines Sig_a [cm-1] from neutron destruction rate
+float RegionInfo::CalcSiga() {
+    return CalcDest() * 0.01097;
 }
 
 // Prints the iso of each region
@@ -304,7 +317,7 @@ void ReactorLiteInfo::UpdateComp() {
     }
 }
 
-// Returns the total burnup (per mass) of the core by going through each batch
+// Returns the total burnup/mass of the core by going through each batch
 float ReactorLiteInfo::CalcBU() {
     unsigned const int regions = region.size();
     float total_BU = 0;
@@ -314,8 +327,19 @@ float ReactorLiteInfo::CalcBU() {
     return total_BU / regions;
 }
 
+// Returns the burnup if the reactor at given flux; using rflux_ and fluence_timestep_
+float ReactorLiteInfo::CalcBU(float flux) {
+    unsigned const int regions = region.size();
+    float burnup = 0;
+    float fluence;
 
+    for(int reg_i = 0; reg_i < regions; reg_i++) {
+        fluence = region[reg_i].fluence_ + (region[reg_i].rflux_ * flux * fluence_timestep_);
+        burnup += region[reg_i].CalcBU(fluence);
+    }
 
+    return burnup / regions;
+}
 
 
 

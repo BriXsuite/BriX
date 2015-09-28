@@ -200,45 +200,36 @@ void StructReader(string library_path, float &struct_prod, float &struct_dest) {
 void DACalc(ReactorLiteInfo &core){
 // DA = phi_thermal_Mod / phi_thermal_Fuel
 
-    float a = core.DA_.a; // radius of the fuel rod
-    float b = core.DA_.b; // radius of the equivalent cell
-    float Sig_sF = core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
-    float Sig_sM = core.DA_.mod_Sig_s; //macroscopic scatter CS of moderator
-    float Sig_aM = core.DA_.mod_Sig_a; // macroscopic abs. CS of moderator
+    const float a = core.DA_.a;               // radius of the fuel rod
+    const float b = core.DA_.b;               // radius of the equivalent cell
+    const float Sig_sF = core.DA_.fuel_Sig_s; // macroscopic scatter CS of fuel
+    const float Sig_sM = core.DA_.mod_Sig_s;  //macroscopic scatter CS of moderator
+    const float Sig_aM = core.DA_.mod_Sig_a;  // macroscopic abs. CS of moderator
 
-    float L_F;      // diffusion length of fuel
-    float L_M;      // diffusion length of moderator
-    float Sig_aF;   // macroscopic abs. CS of fuel
-    float V_F;      // volume of fuel
-    float V_M;      // volume of moderator
-    float Sig_trF;  // macroscopic transport CS of fuel
-    float Sig_trM;  // macroscopic transport CS of moderator
-    float Sig_tF;   // macroscopic total CS of fuel
-    float Sig_tM;   //macroscopic total CS of moderator
-    float D_F;      // diffusion coef. of fuel
-    float D_M;      // diffusion coef. of moderator
-    float A_F;      // A number of fuel
-    float A_M;      // A number of moderator
-    float x, y, z;  // calculated equivalent dimensions
+    float Sig_trF;          // macroscopic transport CS of fuel
+    float Sig_tF;           // macroscopic total CS of fuel
+    float D_F;              // diffusion coef. of fuel
+    const float A_F = 235;  // A number of fuel
+    float L_F;              // diffusion length of fuel
+    float Sig_aF;           // macroscopic abs. CS of fuel
+    const float V_F = pow(a,2)*3.141592; // Fuel volume
+
+    const float Sig_tM = Sig_aM + Sig_sM;       // Macroscopic total CS of moderator
+    const float A_M = 18;                       // A of moderator
+    const float Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;  // macroscopic transport CS of moderator
+    const float D_M = 1 / (3 * Sig_trM);        // diffusion coef. of moderator
+    const float L_M = sqrt(D_M/Sig_aM);         // diffusion length of moderator
+    const float V_M = pow(b,2)*3.141592 - V_F;  // volume of moderator
+
+    // calculated equivalent dimensions
+    float x;
+    const float y = a/L_M;
+    const float z = b/L_M;
     float F, E;     // lattice functions
     float f;        // flux of fuel divided by total flux(fuel+moderator)
 
-    // Moderator calculations
-    Sig_tM = Sig_aM + Sig_sM;
-    A_F = 235;
-    A_M = 18;
-    Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;
-    D_M = 1 / (3 * Sig_trM);
-    L_M = sqrt(D_M/Sig_aM);
-    y = a/L_M;
-    z = b/L_M;
-    V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
-    V_F = pow(a,2)*3.141592;
-
     for (int i = 0; i < core.region.size(); i++) {
-/// INCOMPLETE
-        //Sig_aF = siga_finder(core.region[i]);
-        //cout << "Siga: " << Sig_aF << endl;
+        Sig_aF = core.region[i].CalcSiga();
 
         Sig_tF = Sig_aF+Sig_sF;
         Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
@@ -246,28 +237,17 @@ void DACalc(ReactorLiteInfo &core){
         L_F = sqrt(D_F/Sig_aF);
         x = a/L_F;
 
-        /*****book example***
-        //should get f = 0.8272 with the values below
-        //Lamarsh pg.316
-        a=1.02;
-        b=14.3;
-        x=0.658;
-        y=0.0173;
-        z=0.242;
-        V_M=195.6;
-        V_F=1;
-        Sig_aM=0.0002728;
-        Sig_aF=0.3668;
-        ******************/
-
         F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
 
-        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) * boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) * boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
+        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) *
+                boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
+                boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
+                boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) *
+                                                    boost::math::cyl_bessel_i(1, y)));
 
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-        //cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 
-        ///core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+        core.region[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
     }
 }
 
@@ -276,7 +256,6 @@ void BurnFuel(ReactorLiteInfo &core) {
 
     if(core.target_CR_ < 0) {
         // Reactor is in stop at k=1 mode
-        ///TODO normal fuel burn
         CriticalityBurn(core);
     } else {
         ///TODO CR burn
@@ -290,36 +269,55 @@ void CriticalityBurn(ReactorLiteInfo &core) {
     float kcore = 1.5;
     float kcore_prev;
     unsigned const int regions = core.region.size();
+    float abs_flux = core.base_flux_;
+
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
         FluxCalc(core); // Update relative flux of regions
+
         // Calculate DA
         if(core.DA_mode_ == 1) {
             DACalc(core);
         }
+
+        abs_flux = AbsFluxCalc(core, abs_flux);
+        //std::cout << "Absolute flux: " << abs_flux << std::endl;
+
         // Update fluences
         for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
             core.region[reg_i].fluence_ += core.region[reg_i].rflux_
-                    * core.fluence_timestep_ * core.base_flux_;
+                    * core.fluence_timestep_ * abs_flux;
         }
 
-        // Recalculate k
+        // Calculate k
         kcore = kCalc(core);
-        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << std::endl;
+        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
     }
+
+    // Update base_flux_ for next time
+    core.base_flux_ = abs_flux;
+
     // Find the discharge fluences
-    for(int reg_i = 0; reg_i < regions; reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         ///The subtraction here is meh
         core.region[reg_i].fluence_ = Interpolate((core.region[reg_i].fluence_ -
-                   core.region[reg_i].rflux_ * core.fluence_timestep_ * core.base_flux_),
+                   core.region[reg_i].rflux_ * core.fluence_timestep_ * abs_flux),
                    core.region[reg_i].fluence_, kcore_prev, kcore, 1);
     }
+
 }
 
-///TODO complete all four modes
 // Determines the flux calculation method and calls flux function accordingly
 void FluxCalc(ReactorLiteInfo &core) {
-    const unsigned int mode = core.flux_mode_;
+    unsigned int mode = core.flux_mode_;
+
+    // Override to mode=zero if any region exceeds library limit
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+        if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+            mode = 0;
+        }
+    }
+
     if(mode == 0) {
         // Simplest mode, all fluxes are 1
         for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
@@ -328,9 +326,9 @@ void FluxCalc(ReactorLiteInfo &core) {
         }
 
     }
-    else if (mode == 1) {EqPowPhi(core);}
-    else if (mode == 2) {}
-    else if (mode == 3) {}
+    else if(mode == 1) {EqPowPhi(core);}
+    else if(mode == 2) {InvProdPhi(core);}
+    else if(mode == 3) {SpatialPhi(core);}
     else {
         std::cout << "  Error in flux mode input for ReactorLite" << std::endl;
     }
@@ -342,7 +340,7 @@ float kCalc(ReactorLiteInfo &core) {
     float prod_tot = 0;
     float dest_tot = 0;
 
-    for(int reg_i = 0; reg_i < regions; reg_i++) {
+    for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         prod_tot += ( (core.region[reg_i].CalcProd() +
                        core.struct_prod_ * core.region[reg_i].DA)
                     * core.region[reg_i].rflux_);
@@ -377,7 +375,8 @@ void EqPowPhi(ReactorLiteInfo &core) {
     // This assumes oldest batch will have the least burnup for a given change in fluence
     bu_next = core.region[0].CalcBU(core.region[0].fluence_ + max_fluence);
     delta_bu = bu_next - bu_old;
-    for(int i = 0; i < N; i++){
+
+    for(int unsigned i = 0; i < N; i++) {
         batch_bu = core.region[i].CalcBU();
         // find the discrete points before and after batch bu
         for(jk = 0; core.region[i].iso.BU[jk] < batch_bu + delta_bu; jk++){
@@ -385,14 +384,15 @@ void EqPowPhi(ReactorLiteInfo &core) {
 
         batch_fluence = Interpolate(core.region[i].iso.fluence[jk-1], core.region[i].iso.fluence[jk],
                                     core.region[i].iso.BU[jk-1], core.region[i].iso.BU[jk], batch_bu + delta_bu);
+
         core.region[i].rflux_ = (batch_fluence - core.region[i].fluence_)/(max_fluence);
         if(core.region[i].rflux_ > max_flux){max_flux = core.region[i].rflux_;}
         if(core.region[i].rflux_ < 0){core.region[i].rflux_ = 0;}
         if(core.region[i].rflux_ < min_flux){min_flux = core.region[i].rflux_;}
     }
 
-    for(int i = 0; i < N; i++){
-        if(core.region[i].rflux_ == 0){
+    for(int unsigned i = 0; i < N; i++) {
+        if(core.region[i].rflux_ == 0) {
             core.region[i].rflux_ = min_flux/max_flux;
         } else {
             core.region[i].rflux_ = core.region[i].rflux_ / max_flux;
@@ -400,18 +400,441 @@ void EqPowPhi(ReactorLiteInfo &core) {
     }
 }
 
+// Calculates relative fluxes based on the inverse of neutron production assumption (2)
+void InvProdPhi(ReactorLiteInfo &core) {
+// Updates the rflux of each region in core.region
+// Assumes the flux of a region is proportional to the inverse neutron prod rate
 
+    double maxphi = 0;
 
+    // Find the inverse of neutron production
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
 
+        core.region[reg_i].rflux_ = 1. / core.region[reg_i].CalcProd();
 
+        if(maxphi < core.region[reg_i].rflux_){
+            maxphi = core.region[reg_i].rflux_;
+        }
+    }
 
+    // Normalize all the flux values
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++){
+        core.region[reg_i].rflux_ /= maxphi;
+    }
+}
 
+// Calculates the CR for reg_i
+float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i) {
+    // reg_i is the region number, starting from zero
 
+    float FP = 0, FP0 = 0, FP1 = 0;
+    float fissile = 0, fissile0 = 0, fissile1 = 0;
+    float ini_fissile = 0;
+    float CR;
+    unsigned int ii, ZZ;
 
+    const unsigned int CR_upper = 160, CR_lower = 70;
 
+    // Find the discrete point index for region fluence
+    if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+        ii = core.region[reg_i].iso.fluence.size()-1;
+    } else {
+        for(ii = 1; core.region[reg_i].iso.fluence[ii] < core.region[reg_i].fluence_; ii++){}
+    }
 
+    for(int iso_j = 0; iso_j < core.region[reg_i].iso.iso_vector.size(); iso_j++) {
+        // Convert name to mass number
+        ZZ = core.region[reg_i].iso.iso_vector[iso_j].name;
+        ZZ = ZZ % 10000;
+        ZZ /= 10;
 
+        // Add up the FP
+        if(ZZ < CR_upper && ZZ > CR_lower) {
+            // Interpolation will be done at the end
+            FP0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+            FP1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+        }
 
+        // Add up fissiles
+        for(int fis = 0; fis < core.CR_fissile_.size(); fis++){
+            if(core.region[reg_i].iso.iso_vector[iso_j].name == core.CR_fissile_[fis]){
+                fissile0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                fissile1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+
+                ini_fissile += core.region[reg_i].iso.iso_vector[iso_j].mass[0];
+            }
+        }
+    }
+
+    // recycling variable FP0 here to check greater than zero
+    FP0 = Interpolate(FP0, FP1, core.region[reg_i].iso.fluence[ii-1],
+                      core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+    if(FP0 > 0) {FP += FP0;}
+
+    fissile = Interpolate(fissile0, fissile1, core.region[reg_i].iso.fluence[ii-1],
+                          core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        CR  = 0;
+    }
+
+    if(CR < 0){CR = 0;}
+
+    return CR;
+}
+
+// Calculates the CR for the core
+float CoreCRCalc(ReactorLiteInfo &core) {
+    float FP = 0, FP0 = 0, FP1 = 0;
+    float fissile = 0, fissile0 = 0, fissile1 = 0;
+    float ini_fissile = 0;
+    float CR;
+    unsigned int ii, ZZ;
+
+    const unsigned int CR_upper = 160, CR_lower = 70;
+
+    for(unsigned int reg_i = 0; reg_i < core.region.size(); reg_i++) {
+        // Find the discrete point index for region fluence
+        if(core.region[reg_i].fluence_ > core.region[reg_i].iso.fluence.back()) {
+            ii = core.region[reg_i].iso.fluence.size()-1;
+        } else {
+            for(ii = 1; core.region[reg_i].iso.fluence[ii] < core.region[reg_i].fluence_; ii++){}
+        }
+
+        for(int iso_j = 0; iso_j < core.region[reg_i].iso.iso_vector.size(); iso_j++) {
+            // Convert name to mass number
+            ZZ = core.region[reg_i].iso.iso_vector[iso_j].name;
+            ZZ = ZZ % 10000;
+            ZZ /= 10;
+
+            // Add up the FP
+            if(ZZ < CR_upper && ZZ > CR_lower) {
+                // Interpolation will be done at the end
+                FP0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                FP1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+            }
+
+            // Add up fissiles
+            for(int fis = 0; fis < core.CR_fissile_.size(); fis++){
+                if(core.region[reg_i].iso.iso_vector[iso_j].name == core.CR_fissile_[fis]){
+                    fissile0 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii-1];
+                    fissile1 += core.region[reg_i].iso.iso_vector[iso_j].mass[ii];
+
+                    ini_fissile += core.region[reg_i].iso.iso_vector[iso_j].mass[0];
+                }
+            }
+        }
+
+        // recycling variable FP0 here to check greater than zero
+        FP0 = Interpolate(FP0, FP1, core.region[reg_i].iso.fluence[ii-1],
+                          core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+        if(FP0 > 0) {FP += FP0;}
+
+        fissile += Interpolate(fissile0, fissile1, core.region[reg_i].iso.fluence[ii-1],
+                              core.region[reg_i].iso.fluence[ii], core.region[reg_i].fluence_);
+
+        FP0 = 0;
+        FP1 = 0;
+        fissile0 = 0;
+        fissile1 = 0;
+    }
+
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        CR  = 0;
+    }
+
+    if(CR < 0){CR = 0;}
+
+    return CR;
+}
+
+// Determines the absolute flux (correct flux units) for the timestep
+float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux) {
+    //std::cout << "ABSFLUXCALC BEGIN" << std::endl;
+    const int regions = core.regions_;
+    const float power = core.thermal_pow_;          // [MWth]
+    const float mass = core.core_mass_;
+    const float timestep = core.fluence_timestep_/86400.;  // [day]
+    const float BU_prev = core.CalcBU();            // [MWd/kgIHM]
+    float BU_next, delta_BU;
+    float fluence;
+    float step_power1 = 0, step_power2 = 0;
+    float abs_flux1 = abs_flux, abs_flux2 = abs_flux*2, temp_flux;
+    unsigned int times = 0;
+
+    delta_BU = core.CalcBU(abs_flux1) - BU_prev;
+    step_power1 = delta_BU * mass / timestep;
+
+    // Quickly scale up flux if abs_flux was too far off
+    while(step_power1 < power && times < 20) {
+        abs_flux1 *= 1.5;
+
+        delta_BU = core.CalcBU(abs_flux1) - BU_prev;
+        step_power1 = delta_BU * mass / timestep;
+
+        times++;
+    }
+    times = 0;
+    abs_flux2 = abs_flux1 * 0.9;
+
+    while(times < 20) {
+        // Determine the timestep power implied by the current abs_flux
+        delta_BU = core.CalcBU(abs_flux2) - BU_prev;
+        step_power2 = delta_BU * mass / timestep;   // [MWd/kgIHM] * [kgIHM] / [day]
+
+        if(std::abs(step_power2 - power)/power < core.abs_flux_tol_) {
+            return abs_flux2;
+        }
+
+        temp_flux = abs_flux2 + (power - step_power2)*(abs_flux2-abs_flux1)/(step_power2-step_power1);
+        if(temp_flux < 0) {temp_flux = 0;}
+
+        step_power1 = step_power2;
+        abs_flux1 = abs_flux2;
+        abs_flux2 = temp_flux;
+
+        times++;
+    }
+
+    std::cout << "Warning! Absolute flux calculation reached max iterations!" << std::endl;
+    return abs_flux2;
+}
+
+// Performs the spatial flux calculation
+void SpatialPhi(ReactorLiteInfo &core) {
+// Assumes an outermost water region
+
+    unsigned const int region = core.region.size();
+    float delta = core.spatial_.delta;
+    float R[region+1];          //radial thickness of each region
+    int N[region+1];            //number of mesh points in each region
+    int NC[region+1];           //cumulative N
+    int NTotal;                 //total number of mesh points
+    int iter;
+    float dd2[region+1];        // D/delta^2
+    float Sigma_a[region+1];    //mac. abs. cs of each region
+    float NuSigma_f[region+1];  //nu sigma f of each region
+    float Sigma_tr[region+1];   //mac. transport cs of each region
+    float D[region+1];          //diff coef. for each region
+    float LSquared[region+1];
+    float k = 1;
+    float k_prev = 0.9;
+    float prod, prod_prev;
+    float flux[region+1], maxflux=0;
+    float sum = 0;
+
+    // Set the radial thickness of each region
+    R[0] = std::sqrt(core.spatial_.fuel_area/region/3.141592);
+
+    for(unsigned int reg_i = 1; reg_i < region; reg_i++) {
+        R[reg_i] = sqrt(core.spatial_.fuel_area/region/3.141592*(reg_i+1));
+    }
+    R[region] = R[region-1] + core.spatial_.spatial_mod_thickness;
+
+    // Assign fuel cross sections
+    for(int reg_i = 0; reg_i < region; reg_i++) {
+
+        NuSigma_f[reg_i] = core.region[reg_i].CalcNuSigf();
+        Sigma_a[reg_i] = core.region[reg_i].CalcSiga();
+
+    /*    // comment out!
+        Sigma_a[0] = 0.0230;
+        Sigma_a[1] = 0.0246;
+        Sigma_a[2] = 0.0324;
+        NuSigma_f[0] = 0.0184;
+        NuSigma_f[1] = 0.0217;
+        NuSigma_f[2] = 0.0382;
+        /// till here!  */
+
+        Sigma_tr[reg_i] = core.spatial_.spatial_fuel_Sig_tr;
+        D[reg_i] = 1/(Sigma_tr[reg_i]*3.);
+        LSquared[reg_i] = D[reg_i]/Sigma_a[reg_i];
+    }
+
+    // Assign moderator cross sections
+    Sigma_a[region] = core.spatial_.spatial_mod_Sig_a;
+    Sigma_tr[region] = core.spatial_.spatial_mod_Sig_tr;
+    D[region] = 1/(Sigma_tr[region]*3.);
+    LSquared[region] = D[region]/Sigma_a[region];
+    NuSigma_f[region] = core.spatial_.spatial_mod_Sig_f;
+
+    // Populate dd2
+    for(int reg_i = 0; reg_i < region+1; reg_i++) {
+        dd2[reg_i] = D[reg_i]/delta/delta;
+    }
+
+    if((R[region-1]-R[region-2])/delta < 2.99) {
+        std::cout << "  Warning, too few discrete points in spatial flux calc." << std::endl;
+        unsigned int last = region;
+        if(region == 1){last = 2;}
+        delta = (R[last-1]-R[last-2])/3;
+        core.spatial_.delta = delta;
+        std::cout << "    Delta changed to " << delta << " [cm]." << std::endl;
+    }
+
+    // Populate N, number of mesh points in each region
+    N[0] = round(R[0]/delta);
+    NC[0] = N[0];
+    NTotal = N[0];
+
+    for(unsigned int reg_i = 1; reg_i < region+1; reg_i++) {
+        N[reg_i] = std::round((R[reg_i] - R[reg_i-1]) / delta);
+        if(N[reg_i] < 3) {
+            std::cout << "  Warning! Region " << reg_i+1 << " has too few discrete points ("
+                    << N[reg_i] << ").  - Increase fuel_area or mod_thickness." << std::endl;
+            EqPowPhi(core);
+            return;
+        }
+        NC[reg_i] = NC[reg_i-1] + N[reg_i];
+        NTotal += N[reg_i];
+    }
+    NC[region] += 1;
+    NTotal += 1;
+/*
+    Eigen::MatrixXf A(NTotal, NTotal);
+    Eigen::MatrixXf F(NTotal, 1);
+    Eigen::MatrixXf phi(NTotal, 1);
+    Eigen::MatrixXf phi_prev(NTotal, 1);
+    Eigen::MatrixXf S(NTotal, 1);
+    Eigen::MatrixXf S_prev(NTotal, 1);
+
+    A.setZero();
+    F.setZero();
+
+    int jprev = 0;
+    int j;
+
+    int r = 0; //region index
+    for(int i = 1; i < NTotal-1; i++) {
+        A(i, i-1) = (-1.)*dd2[r]*(2*i-1)/(2*i);
+        A(i,i) = dd2[r]*2. + Sigma_a[r];
+        A(i, i+1) = (-1.)*dd2[r]*(2*i+1)/(2*i);
+        if(i == NC[r]){
+            r += 1;
+        }
+        if(core.region[r].rflux_ < 1.1 && core.region[r].rflux_ > 0) {
+            phi_prev(i) = 1;//core.region[r].rflux; //uses last runs results if available
+        } else {
+            phi_prev(i) = 1;
+        }
+
+    }
+    A(0,0) = 1;
+    A(0,1) = -1;
+    A(NTotal-1,NTotal-1) = 1;
+    phi_prev(NTotal-1) = 0;
+
+    // Boundary conditions
+    for(r = 0; r < region; r++) {
+        A(NC[r],NC[r]-1) = D[r];
+        A(NC[r],NC[r]) = -D[r]-D[r+1];
+        A(NC[r],NC[r]+1) = D[r+1];
+    }
+
+    r = 0;
+    for(int i = 1; i < NTotal; i++) {
+        if(i != NC[r]) {
+            F(i) = NuSigma_f[r];
+        }
+        if(i == NC[r]) {r += 1;}
+        S_prev(i) = F(i)*phi_prev(i);
+    }
+
+    for(iter = 0; iter < 100; iter++) {
+        phi = A.colPivHouseholderQr().solve(S_prev)/k_prev;
+
+        if(!phi.allFinite()) {phi = phi_prev;}
+
+        S = F.array() * phi.array();
+
+        prod = (0.25)*3.141592*NuSigma_f[0]*phi(0)*delta*delta;
+        prod_prev = (0.25)*3.141592*NuSigma_f[0]*phi_prev(0)*delta*delta;
+        r = 0;
+
+        for(int i = 0; i < NTotal; i++) {
+            if(i == NC[r]){
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+                r += 1;
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+            } else {
+                prod += 2.*3.141592*NuSigma_f[r]*phi(i)*i*delta*delta;
+                prod_prev += 2.*3.141592*NuSigma_f[r]*phi_prev(i)*i*delta*delta;
+            }
+        }
+        ///TODO check this
+        if(abs((k_prev-k)/k) < 0.001 && iter > 3) {break;}
+        //cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  k: " << prod/prod_prev << endl;
+        k = prod/prod_prev*k_prev;
+        phi_prev = phi;
+        k_prev = k;
+        S_prev = S;
+    }
+
+    // Find area weighted average phi per batch
+    r = 0;
+    flux[0] = 0;
+    for(int i = 0; i < NTotal; i++) {
+        if(phi(i) < 0) {phi(i) = 0;}
+
+        flux[r] += phi(i)*(2*(i+1)-1);
+        sum += (2*(i+1)-1);
+
+        // uses some trickery to switch between regions
+        if(i == NC[r] || i == NTotal-1) {
+            // divide by total area
+            flux[r] /= sum;
+
+            // reset sum and flux of next region
+            sum = 0;
+            r += 1;
+            flux[r] = 0;
+        }
+    }
+    for(r = 0; r < region+1; r++) {
+        if(flux[r] > maxflux){
+            maxflux = flux[r];
+        }
+    }
+
+    //cout << " Iterations:" << iter << " k:" << k << endl;
+    //cout << "--- A ---" << endl << A << endl << " --- ----" << endl;
+    //cout << "---phi---" << endl<< phi << endl << "--------" << endl;
+
+    //find area weighted average phi per batch
+    r = 0;
+    flux[0] = 0;
+    for(int i = 0; i < NTotal; i++) {
+        flux[r] += phi(i)*(2*(i+1)-1);
+        sum += (2*(i+1)-1);
+
+        if(i == NC[r] || i == NTotal-1) {
+            flux[r] /= sum;
+            sum = 0;
+            r += 1;
+            flux[r] = 0;
+        }
+    }
+    for(r = 0; r < region+1; r++) {
+        if(flux[r] > maxflux){
+            maxflux = flux[r];
+        }
+    }
+
+    // Normalize the fluxes
+    for(r = 0; r < region+1; r++) {
+        flux[r] /= maxflux;
+    }
+
+    for(int reg_i = 0; reg_i < region; reg_i++) {
+        core.region[reg_i].rflux_ = flux[reg_i];
+    }*/
+}
 
 
 

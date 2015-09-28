@@ -159,12 +159,6 @@ public:
                       "units": "MWd/kgIHM"}
     float target_burnup;
 
-    #pragma cyclus var {"tooltip": "Target conversion ratio, set to negative for forward mode", \
-                      "default": -1, \
-                      "userlevel": 1, \
-                      "units": "MWd/kgIHM"}
-    float target_CR;
-
     #pragma cyclus var {"default": 0.33, \
                       "userlevel": 2, \
                       "tooltip": "Thermal to electric conversion rate."}
@@ -185,6 +179,11 @@ public:
                       "tooltip": "Structural (nonfuel) material effect calculation. 0:OFF, 1:ON"}
     int struct_mode;
 
+    #pragma cyclus var {"default": 0.001, \
+                      "userlevel": 3, \
+                      "tooltip": "The absolute flux calculation convergence requirement."}
+    float abs_flux_tol;
+
     #pragma cyclus var {"default": 72, \
                         "userlevel": 2, \
                         "tooltip": "The amount of time fuel will spend in onsite storage", \
@@ -203,6 +202,18 @@ public:
                       "default": 0, \
                       "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
     float cycle_length;
+
+
+    /** Conversion Ratio (CR) Parameters **/
+    #pragma cyclus var {"tooltip": "Target conversion ratio, set to negative for forward mode", \
+                      "default": -1, \
+                      "userlevel": 1, \
+                      "units": "MWd/kgIHM"}
+    float target_CR;
+
+    #pragma cyclus var {"units": ["NUCID", "NUCID"], \
+                      "tooltip": "List of fissile isotopes for conversion ratio calculation."}
+    std::vector<std::string> CR_fissile;
 
 
     /** Spatial Method Parameters **/
