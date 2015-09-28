@@ -5,10 +5,10 @@ Test input for ReactorLite
 
 <simulation>
   <control>
-    <duration>620</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
-    <decay>lazy</decay>
+    <decay>never</decay>
   </control>
 
   <archetypes>
@@ -81,7 +81,7 @@ Test input for ReactorLite
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>5000.0</capacity>
+        <capacity>5000000000000.0</capacity>
       </Sink>
     </config>
   </facility>
