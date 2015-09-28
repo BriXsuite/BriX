@@ -127,7 +127,7 @@ public:
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
     float fluence_timestep_;// Fluence propagation time step [second]
-    float base_flux_;       // Library base flux
+    float base_flux_;       // Library base flux or last cycle flux
     std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
 
     float abs_flux_tol_;    // Convergence tolerance for absolute flux calculation

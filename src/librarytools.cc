@@ -269,6 +269,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
     float kcore = 1.5;
     float kcore_prev;
     unsigned const int regions = core.region.size();
+    float abs_flux = core.base_flux_;
 
     while(kcore > 1) {
         kcore_prev = kcore; // Save previous k for final interpolation
@@ -292,6 +293,10 @@ void CriticalityBurn(ReactorLiteInfo &core) {
         kcore = kCalc(core);
         //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
     }
+
+    // Update base_flux_ for next time
+    core.base_flux_ = abs_flux;
+
     // Find the discharge fluences
     for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
         ///The subtraction here is meh
@@ -299,6 +304,7 @@ void CriticalityBurn(ReactorLiteInfo &core) {
                    core.region[reg_i].rflux_ * core.fluence_timestep_ * abs_flux),
                    core.region[reg_i].fluence_, kcore_prev, kcore, 1);
     }
+
 }
 
 // Determines the flux calculation method and calls flux function accordingly
