@@ -32,5 +32,6 @@ float RegionCRCalc(ReactorLiteInfo &core, unsigned const int reg_i);
 float CoreCRCalc(ReactorLiteInfo &core);
 float AbsFluxCalc(ReactorLiteInfo &core, float abs_flux);
 void SpatialPhi(ReactorLiteInfo &core);
+float SteadyStateFluence(ReactorLiteInfo core, IsoInfo iso);
 
 #endif // LIBRARYTOOLS_H

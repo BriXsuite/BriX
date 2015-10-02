@@ -69,6 +69,7 @@ void ReactorLite::Tick() {
     reactor_core_.flux_mode_ = flux_mode;
     reactor_core_.DA_mode_ = DA_mode;
     reactor_core_.abs_flux_tol_ = abs_flux_tol;
+    reactor_core_.SS_tol_ = SS_tol;
     for(int iso_i = 0; iso_i < CR_fissile.size(); iso_i++) {
             reactor_core_.CR_fissile_.push_back(std::stoi(CR_fissile[iso_i]));
     }
@@ -171,8 +172,10 @@ void ReactorLite::Tock() {
     reactor_core_.Reorder();
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
+
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
+
     // Determine change in core burnup in this step
     float delta_BU = reactor_core_.CalcBU() - BU_prev;
     if(delta_BU < 0) {delta_BU = 0;}

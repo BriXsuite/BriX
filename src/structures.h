@@ -131,6 +131,7 @@ public:
     std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
 
     float abs_flux_tol_;    // Convergence tolerance for absolute flux calculation
+    float SS_tol_;          // Convergence tolerance for steady state fluence calculation
 
     unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial

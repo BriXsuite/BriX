@@ -184,6 +184,11 @@ public:
                       "tooltip": "The absolute flux calculation convergence requirement."}
     float abs_flux_tol;
 
+    #pragma cyclus var {"default": 0.01, \
+                      "userlevel": 3, \
+                      "tooltip": "The steady state fluence calculation convergence requirement."}
+    float SS_tol;
+
     #pragma cyclus var {"default": 72, \
                         "userlevel": 2, \
                         "tooltip": "The amount of time fuel will spend in onsite storage", \
