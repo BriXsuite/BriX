@@ -11,6 +11,7 @@ INSTALL(TARGETS brix
     COMPONENT brix
     )
 use_cyclus("BriX" "ReactorLite")
+use_cyclus("BriX" "ReactorX")
 install_cyclus_module("BriX" "")
 TARGET_LINK_LIBRARIES(BriX brix)
 TARGET_LINK_LIBRARIES(BriX_unit_tests brix)
