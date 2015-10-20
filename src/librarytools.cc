@@ -694,7 +694,7 @@ void SpatialPhi(ReactorLiteInfo &core) {
     }
     NC[region] += 1;
     NTotal += 1;
-/*
+
     Eigen::MatrixXf A(NTotal, NTotal);
     Eigen::MatrixXf F(NTotal, 1);
     Eigen::MatrixXf phi(NTotal, 1);
@@ -768,7 +768,7 @@ void SpatialPhi(ReactorLiteInfo &core) {
             }
         }
         ///TODO check this
-        if(abs((k_prev-k)/k) < 0.001 && iter > 3) {break;}
+        if(abs((k_prev-k)/k) < 0.001 && iter > 3) {std::cout << "BROKE!" << std::endl; break;}
         //cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  k: " << prod/prod_prev << endl;
         k = prod/prod_prev*k_prev;
         phi_prev = phi;
@@ -833,7 +833,7 @@ void SpatialPhi(ReactorLiteInfo &core) {
 
     for(int reg_i = 0; reg_i < region; reg_i++) {
         core.region[reg_i].rflux_ = flux[reg_i];
-    }*/
+    }
 }
 
 // Returns the steady state fluence of the core by refueling with IsoInfo iso

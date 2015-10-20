@@ -12,8 +12,8 @@
 #include <boost/math/special_functions/bessel.hpp>
 
 // Used for spatial flux calc
-//#include <eigen3/Eigen/Core>
-//#include <eigen3/Eigen/Eigenvalues>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Eigenvalues>
 
 using namespace std;
 

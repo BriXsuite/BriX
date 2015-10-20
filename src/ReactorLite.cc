@@ -223,6 +223,8 @@ void ReactorLite::Tock() {
             const float burnup = reactor_core_.region[i].CalcBU();
 
             std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
+            std::cout << "   U235: " << reactor_core_.region[i].comp[922350] << " FisPu: " << reactor_core_.region[i].comp[942390] + reactor_core_.region[i].comp[942410]
+                << " TotPu: " << reactor_core_.region[i].comp[942390] + reactor_core_.region[i].comp[942400] + reactor_core_.region[i].comp[942410] + reactor_core_.region[i].comp[942420] << std::endl;
             cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
             cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
          }
@@ -234,6 +236,8 @@ void ReactorLite::Tock() {
         std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4)
                 << reactor_core_.region[0].CalcBU() //TODO << "  Batch CR: " << reactor_core_.region[0].CR_
                 << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+        std::cout << "  U235: " << reactor_core_.region[0].comp[922350] << " FisPu: " << reactor_core_.region[0].comp[942390] + reactor_core_.region[0].comp[942410]
+                << " TotPu: " << reactor_core_.region[0].comp[942390] + reactor_core_.region[0].comp[942400] + reactor_core_.region[0].comp[942410] + reactor_core_.region[0].comp[942420] << std::endl;
     }
 
     ///TODO move this to material exchange
