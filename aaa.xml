@@ -105,7 +105,7 @@ Test input for ReactorLite
         <thermal_pow>3800</thermal_pow>
         <core_mass>104100</core_mass>
 	<flux_mode>3</flux_mode>
-        <nonleakage>0.95225</nonleakage>
+        <nonleakage>0.95145</nonleakage>
 	<DA_mode>1</DA_mode>
 	<reactor_life>180</reactor_life>
 	<fluence_timestep>100</fluence_timestep>

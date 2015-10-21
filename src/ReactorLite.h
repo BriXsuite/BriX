@@ -222,18 +222,18 @@ public:
 
 
     /** Spatial Method Parameters **/
-    #pragma cyclus var {"default": 5, \
+    #pragma cyclus var {"default": 0.15, \
                       "userlevel": 3, \
                       "tooltip": "Delta to be used for cylindrical flux calculation."}
     float spatial_delta;
 
-    #pragma cyclus var {"default": 4197, \
+    #pragma cyclus var {"default": 100, \
                       "units": "cm2", \
                       "userlevel": 3, \
                       "tooltip": "Total area of the fuel (not including moderator) in core. Used for spatial flux calculation."}
     float spatial_area;
 
-    #pragma cyclus var {"default": 50, \
+    #pragma cyclus var {"default": 10, \
                       "units": "cm", \
                       "userlevel": 3, \
                       "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation. Used for spatial flux calculation."}
@@ -245,23 +245,28 @@ public:
                       "tooltip": "Macroscopic fission cross section of the moderator. Used for spatial flux calculation."}
     float spatial_mod_Sig_f;
 
-    #pragma cyclus var {"default": 3.46, \
+    #pragma cyclus var {"default": 0.18, \
                       "units": "cm-1", \
                       "userlevel": 3, \
                       "tooltip": "Macroscopic transport cross section of the moderator. Used for spatial flux calculation."}
     float spatial_mod_Sig_tr;
 
-    #pragma cyclus var {"default": 0.0222, \
+    #pragma cyclus var {"default": 0.0012, \
                       "units": "cm-1", \
                       "userlevel": 3, \
                       "tooltip": "Macroscopic absorption cross section of the moderator. Used for spatial flux calculation."}
     float spatial_mod_Sig_a;
 
-    #pragma cyclus var {"default": 0.12, \
+    #pragma cyclus var {"default": 0.244, \
                       "units": "cm-1", \
                       "userlevel": 3, \
                       "tooltip": "Macroscopic transport cross section of the fuel. Used for spatial flux calculation."}
     float spatial_fuel_Sig_tr;
+
+    #pragma cyclus var {"default": 0.005, \
+                      "userlevel": 3, \
+                      "tooltip": "The convergence tolerance used for spatial flux calculation."}
+    float spatial_tolerance;
 
 
     /** Fuel Disadvantage Factor (DA) Calculation Parameters **/

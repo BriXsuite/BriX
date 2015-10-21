@@ -91,7 +91,8 @@ void ReactorLite::Tick() {
     }
 
     // Add spatial calculation parameters
-    if (flux_mode == 2) {
+    if (flux_mode == 3) {
+        reactor_core_.spatial_.spatial_tolerance = spatial_tolerance;
         reactor_core_.spatial_.delta = spatial_delta;
         reactor_core_.spatial_.fuel_area = spatial_area;
         reactor_core_.spatial_.spatial_mod_thickness = spatial_mod_thickness;

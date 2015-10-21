@@ -62,6 +62,7 @@ struct SpatialParamsX {
 
 // Spatial flux calculation parameters for a given region
 struct SpatialParamsLite {
+    float spatial_tolerance;
     float delta;                // [cm]
     float fuel_area;            // Total area of the region in [cm2]
     float spatial_mod_thickness;// [cm]

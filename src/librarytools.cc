@@ -626,12 +626,14 @@ void SpatialPhi(ReactorLiteInfo &core) {
     float prod, prod_prev;
     float flux[region+1], maxflux=0;
     float sum = 0;
+    bool converged = false;
 
     // Set the radial thickness of each region
     R[0] = std::sqrt(core.spatial_.fuel_area/region/3.141592);
 
     for(unsigned int reg_i = 1; reg_i < region; reg_i++) {
         R[reg_i] = sqrt(core.spatial_.fuel_area/region/3.141592*(reg_i+1));
+        //std::cout << R[reg_i] << std::endl;
     }
     R[region] = R[region-1] + core.spatial_.spatial_mod_thickness;
 
@@ -744,7 +746,7 @@ void SpatialPhi(ReactorLiteInfo &core) {
         S_prev(i) = F(i)*phi_prev(i);
     }
 
-    for(iter = 0; iter < 100; iter++) {
+    for(iter = 0; iter < 100 && !converged; iter++) {
         phi = A.colPivHouseholderQr().solve(S_prev)/k_prev;
 
         if(!phi.allFinite()) {phi = phi_prev;}
@@ -767,9 +769,9 @@ void SpatialPhi(ReactorLiteInfo &core) {
                 prod_prev += 2.*3.141592*NuSigma_f[r]*phi_prev(i)*i*delta*delta;
             }
         }
-        ///TODO check this
-        if(abs((k_prev-k)/k) < 0.001 && iter > 3) {std::cout << "BROKE!" << std::endl; break;}
-        //cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  k: " << prod/prod_prev << endl;
+
+        if(abs((k_prev-k)/k) < core.spatial_.spatial_tolerance) {converged = true;}
+        //std::cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  conv: " << abs((k_prev-k)/k) << std::endl;
         k = prod/prod_prev*k_prev;
         phi_prev = phi;
         k_prev = k;
@@ -833,6 +835,7 @@ void SpatialPhi(ReactorLiteInfo &core) {
 
     for(int reg_i = 0; reg_i < region; reg_i++) {
         core.region[reg_i].rflux_ = flux[reg_i];
+        //std::cout << core.region[reg_i].rflux_ << std::endl;
     }
 }
 
