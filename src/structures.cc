@@ -213,6 +213,41 @@ float RegionInfo::CalcSiga() {
     return CalcDest() * 0.01097;
 }
 
+// Checks variables for consistency
+bool ReactorLiteInfo::ConsistencyCheck() {
+    unsigned int regions_;  // Total number of regions/batches
+    float thermal_pow_;     // Reactor thermal power [MWth]
+    float core_mass_;       // Total mass of all fuel in [kg]
+    float target_BU_;       // Target burnup in [MWd/kgIHM]
+    float target_CR_;       // Target conversion ratio
+    float pnl;              // Nonleakage probability
+    float fluence_timestep_;// Fluence propagation time step [second]
+    float base_flux_;       // Library base flux or last cycle flux
+    std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
+
+    float SS_tol_;          // Convergence tolerance for steady state fluence calculation
+
+    if(flux_mode_ < 0 || flux_mode_ > 3) {
+        std::cout << "Unrecognized flux mode " << flux_mode_ << std:: endl;
+        return false;
+    }
+
+    if(DA_mode_ != 0 || DA_mode_ != 1) {
+        std::cout << "Unrecognized DA mode " << DA_mode_ << std::endl;
+        return false;
+    }
+
+    if(abs_flux_tol_ < 0.00001 || SS_tol_ < 0.00001) {
+        return false;
+    }
+
+    if(abs_flux_tol_ > 0.4 || SS_tol_ > 0.4) {
+        return false;
+    }
+
+
+}
+
 // Prints the iso of each region
 void ReactorLiteInfo::PrintRegionIsos() {
     std::cout << global_libs[libraries_[0]].name << " region isos:" << std::endl;

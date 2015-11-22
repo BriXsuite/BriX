@@ -150,6 +150,7 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;  // region[0] is oldest
 
+    bool ConsistencyCheck();    // Makes sure there are no contradicting inputs
     void PrintRegionIsos();
     void PrintFluences();
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);

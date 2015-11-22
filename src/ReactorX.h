@@ -74,19 +74,19 @@ public:
 
         /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
-                      "doc": "commodity that the brightlite reactor consumes", \
+                      "doc": "commodity that reactor-lite consumes", \
                       "schematype": "token", \
                       "uitype": ["oneOrMore", "incommodity"]}
     std::vector<std::string> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
-                      "doc": "commodity that the brightlite supplies", \
+                      "doc": "commodity that reactor-lite supplies", \
                       "uitype": "outcommodity", \
                       "uilabel": "Output"}
     std::string out_commod;
 
     #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "doc": "the reactor's burnup & criticality behavior to use"}
+                      "doc": "the reactor-lite's burnup & criticality library to use"}
     std::vector<std::string> libraries;
 
     #pragma cyclus var {"units": "MWth", \
