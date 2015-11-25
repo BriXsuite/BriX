@@ -161,13 +161,19 @@ public:
     float CalcBU(float flux);   // Calculates the burnup if reactor at given flux
 };
 
+// A fuel type is based on one library
+class FuelType {
+    unsigned int f_groups_; // Fuel groups of this fuel type
+    LibInfo library_;       // The library of the fuel group
+
+
+};
+
 class ReactorXInfo {
-public:
     /*
+public:
     // Initialized during startup
-    unsigned int regions_;  // Total number of regions/batches
     float thermal_pow_;     // Reactor thermal power [MWth]
-    float core_mass_;       // Total mass of all fuel in [kg]
     float target_BU_;       // Target burnup in [MWd/kgIHM]
     float target_CR_;       // Target conversion ratio
     float pnl;              // Nonleakage probability
@@ -193,6 +199,8 @@ public:
     float CR_;
 
     // Regions are populated based on reactor parameters
+    unsigned int regions_;  // calculated total number of regions
+    float core_mass_;       // Total mass of all fuel in [kg]
     std::vector<RegionInfo> region;  // region[0] is oldest
 
     void PrintRegionIsos();
