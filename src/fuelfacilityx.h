@@ -89,15 +89,15 @@ public:
                       "doc": "the reactor-lite's burnup & criticality library to use"}
     std::vector<std::string> libraries;
 
-    #pragma cyclus var {"units": "MWth", \
+    #pragma cyclus var {"units": "MWth/kg", \
                       "userlevel": 0, \
                       "tooltip": "Thermal heat production."}
-    float thermal_pow;
+    float fuel_pow_dens;
 
     #pragma cyclus var {"units": "kgIHM", \
                       "userlevel": 0, \
                       "tooltip": "Total mass of the core."}
-    float core_mass;
+    float tot_fuel_mass;
 
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \

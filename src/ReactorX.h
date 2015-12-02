@@ -74,20 +74,16 @@ public:
 
         /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
-                      "doc": "commodity that reactor-lite consumes", \
+                      "doc": "commodity that ReactorX consumes", \
                       "schematype": "token", \
                       "uitype": ["oneOrMore", "incommodity"]}
     std::vector<std::string> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
-                      "doc": "commodity that reactor-lite supplies", \
+                      "doc": "commodity that ReactorX supplies", \
                       "uitype": "outcommodity", \
                       "uilabel": "Output"}
     std::string out_commod;
-
-    #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "doc": "the reactor-lite's burnup & criticality library to use"}
-    std::vector<std::string> libraries;
 
     #pragma cyclus var {"units": "MWth", \
                       "userlevel": 0, \
@@ -112,22 +108,10 @@ public:
                       "doc": "total maximum inventory size of the reactor"}
     float max_inv_size;
 
-    #pragma cyclus var {"tooltip": "Non-leakage probability of the core", \
-                      "doc": "Varies from 0 - 1.", \
-                      "userlevel": 1, \
-                      "default": 0.98}
-    float nonleakage;
-
     #pragma cyclus var {"tooltip": "Number of regions/batches", \
                       "userlevel": 1, \
                       "default": 3}
     int regions;
-
-    #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
-                      "Interpolation metric", "Interpolation values"], \
-                      "default": {}, \
-                      "uitype": ["oneOrMore", "string", "double"]}
-    std::map<std::string, double> interpol_pairs;
 
     #pragma cyclus var {"tooltip": "Target burnup, set to zero for forward mode", \
                       "default": 0, \
@@ -195,86 +179,6 @@ public:
     #pragma cyclus var {"units": ["NUCID", "NUCID"], \
                       "tooltip": "List of fissile isotopes for conversion ratio calculation."}
     std::vector<std::string> CR_fissile;
-
-
-    /** Spatial Method Parameters **/
-    #pragma cyclus var {"default": 5, \
-                      "userlevel": 3, \
-                      "tooltip": "Delta to be used for cylindrical flux calculation."}
-    float spatial_delta;
-
-    #pragma cyclus var {"default": 4197, \
-                      "units": "cm2", \
-                      "userlevel": 3, \
-                      "tooltip": "Total area of the fuel (not including moderator) in core. Used for spatial flux calculation."}
-    float spatial_area;
-
-    #pragma cyclus var {"default": 50, \
-                      "units": "cm", \
-                      "userlevel": 3, \
-                      "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation. Used for spatial flux calculation."}
-    float spatial_mod_thickness;
-
-    #pragma cyclus var {"default": 0.0, \
-                      "units": "cm-1", \
-                      "userlevel": 3, \
-                      "tooltip": "Macroscopic fission cross section of the moderator. Used for spatial flux calculation."}
-    float spatial_mod_Sig_f;
-
-    #pragma cyclus var {"default": 3.46, \
-                      "units": "cm-1", \
-                      "userlevel": 3, \
-                      "tooltip": "Macroscopic transport cross section of the moderator. Used for spatial flux calculation."}
-    float spatial_mod_Sig_tr;
-
-    #pragma cyclus var {"default": 0.0222, \
-                      "units": "cm-1", \
-                      "userlevel": 3, \
-                      "tooltip": "Macroscopic absorption cross section of the moderator. Used for spatial flux calculation."}
-    float spatial_mod_Sig_a;
-
-    #pragma cyclus var {"default": 0.12, \
-                      "units": "cm-1", \
-                      "userlevel": 3, \
-                      "tooltip": "Macroscopic transport cross section of the fuel. Used for spatial flux calculation."}
-    float spatial_fuel_Sig_tr;
-
-
-    /** Fuel Disadvantage Factor (DA) Calculation Parameters **/
-    #pragma cyclus var {"default": 0, \
-                  "userlevel": 2, \
-                  "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
-    int DA_mode;
-
-    #pragma cyclus var {"default": 0.4095, \
-                 "units": "cm", \
-                  "userlevel": 3, \
-                 "tooltip": "Fuel pin radius [cm] used for thermal disadvantage calculation."}
-    float DA_a;
-
-    #pragma cyclus var {"default": 0.70749, \
-                 "units": "cm", \
-                  "userlevel": 3, \
-                 "tooltip": "Moderator radius [cm] used for thermal disadvantage calculation."}
-    float DA_b;
-
-    #pragma cyclus var {"default": 0.222, \
-                 "units": "cm-1", \
-                  "userlevel": 3, \
-                 "tooltip": "Moderator macroscopic abs cross-section for thermal disadvantage calculation."}
-    float DA_mod_Sig_a;
-
-    #pragma cyclus var {"default": 3.44, \
-                 "units": "cm-1", \
-                  "userlevel": 3, \
-                 "tooltip": "Moderator macroscopic scattering cross-section for thermal disadvantage calculation."}
-    float DA_mod_Sig_s;
-
-    #pragma cyclus var {"default": 0.43, \
-                 "units": "cm-1", \
-                  "userlevel": 3, \
-                 "tooltip": "Fuel macroscopic scattering cross-section for thermal disadvantage calculation."}
-    float DA_fuel_Sig_s;
 
 
 private:

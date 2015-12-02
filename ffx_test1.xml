@@ -1,0 +1,134 @@
+<!-- 
+Test input for FuelFacilityX
+
+-->
+
+<simulation>
+  <control>
+    <duration>5</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+    <decay>never</decay>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>BriX</lib><name>FuelFacilityX</name></spec>
+    <spec><lib>BriX</lib><name>ReactorX</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>freshFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+	<capacity>500000</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>500000</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>fuelfacilityx</name>
+    <config>
+      <FuelFacilityX>
+        <in_commods>
+            <val>material</val> 
+        </in_commods>
+        <out_commod>freshFuel</out_commod>
+        <libraries>
+          <val>extLWR</val>
+        </libraries>
+	<fuel_pow_dens>1.12</fuel_pow_dens>
+	<tot_fuel_mass>2000</tot_fuel_mass>
+      </FuelFacilityX>
+    </config>
+  </facility>
+
+  <facility>
+    <name>BriX_ReactorX</name>
+    <config>
+      <ReactorX>
+        <in_commods>
+            <val>freshFuel</val> 
+        </in_commods>
+        <out_commod>uf</out_commod>
+	<regions>3</regions>
+        <thermal_pow>4000</thermal_pow>
+        <core_mass>127000</core_mass>
+	<flux_mode>1</flux_mode>
+	<fluence_timestep>100</fluence_timestep>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
+            <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
+      </ReactorX>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>    
+        <entry>
+          <prototype>BriX_ReactorX</prototype>
+          <number>1</number>
+        </entry>    
+        <entry>
+          <prototype>fuelfacilityx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>   
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>commod_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.6</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.4</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
