@@ -72,6 +72,7 @@ public:
     #pragma cyclus var {"capacity": "max_inv_size"}
     cyclus::toolkit::ResourceBuff inventory;
 
+
         /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that ReactorX consumes", \
@@ -85,15 +86,6 @@ public:
                       "uilabel": "Output"}
     std::string out_commod;
 
-    #pragma cyclus var {"units": "MWth", \
-                      "userlevel": 0, \
-                      "tooltip": "Thermal heat production."}
-    float thermal_pow;
-
-    #pragma cyclus var {"units": "kgIHM", \
-                      "userlevel": 0, \
-                      "tooltip": "Total mass of the core."}
-    float core_mass;
 
         /** Inputs with defaults **/
     #pragma cyclus var {"default": 480, \
@@ -102,22 +94,16 @@ public:
                       "tooltip": "Time before reactor is shutdown after startup."}
     int reactor_life;
 
+    #pragma cyclus var {"units": "MWth", \
+                      "userlevel": 0, \
+                      "tooltip": "Total thermal heat production of the core."}
+    float thermal_pow;
+
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \
                       "tooltip": "reactor maximum inventory size", \
                       "doc": "total maximum inventory size of the reactor"}
     float max_inv_size;
-
-    #pragma cyclus var {"tooltip": "Number of regions/batches", \
-                      "userlevel": 1, \
-                      "default": 3}
-    int regions;
-
-    #pragma cyclus var {"tooltip": "Target burnup, set to zero for forward mode", \
-                      "default": 0, \
-                      "userlevel": 0, \
-                      "units": "MWd/kgIHM"}
-    float target_burnup;
 
     #pragma cyclus var {"default": 0.33, \
                       "userlevel": 2, \
@@ -128,16 +114,6 @@ public:
                       "userlevel": 2, \
                       "tooltip": "Timestep [days] for the burnup calculation fluence progression."}
     float fluence_timestep;
-
-    #pragma cyclus var {"default": 0, \
-                      "userlevel": 2, \
-                      "tooltip": "Flux calculation method. 0: Uniform (all regions always 1), 1:Eq Power, 2:Inv.Neut.Prod, 3:Spatial"}
-    int flux_mode;
-
-    #pragma cyclus var {"default": 1, \
-                      "userlevel": 2, \
-                      "tooltip": "Structural (nonfuel) material effect calculation. 0:OFF, 1:ON"}
-    int struct_mode;
 
     #pragma cyclus var {"default": 0.001, \
                       "userlevel": 3, \

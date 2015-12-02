@@ -67,7 +67,7 @@ public:
     void GetMatlTrades( const std::vector< cyclus::Trade<cyclus::Material> >& trades,
             std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses);
 
-    /**** General Reactor Parameters ****/
+    /**** General FuelFacilityX Parameters ****/
 
     #pragma cyclus var {"capacity": "max_inv_size"}
     cyclus::toolkit::ResourceBuff inventory;
@@ -89,15 +89,32 @@ public:
                       "doc": "the reactor-lite's burnup & criticality library to use"}
     std::vector<std::string> libraries;
 
+    #pragma cyclus var {"userlevel": 0, \
+                      "tooltip": "Number of cycles the fuel type resides in core."}
+    float cycles;
+
     #pragma cyclus var {"units": "MWth/kg", \
                       "userlevel": 0, \
-                      "tooltip": "Thermal heat production."}
+                      "tooltip": "Thermal heat production of the fuel this facility provides."}
     float fuel_pow_dens;
 
     #pragma cyclus var {"units": "kgIHM", \
                       "userlevel": 0, \
-                      "tooltip": "Total mass of the core."}
+                      "tooltip": "Total mass of the fuel type in the ReactorX core."}
     float tot_fuel_mass;
+
+
+        /** Inputs with defaults **/
+    #pragma cyclus var {"tooltip": "Non-leakage probability of the fuel provided by this facility", \
+                      "doc": "Varies from 0 - 1.", \
+                      "userlevel": 1, \
+                      "default": 0.98}
+    float nonleakage;
+
+    #pragma cyclus var {"default": 0.001, \
+                      "userlevel": 3, \
+                      "tooltip": "The absolute flux calculation convergence requirement."}
+    float abs_flux_tol;
 
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \

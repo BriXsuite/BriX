@@ -56,6 +56,7 @@ Test input for FuelFacilityX
         </libraries>
 	<fuel_pow_dens>1.12</fuel_pow_dens>
 	<tot_fuel_mass>2000</tot_fuel_mass>
+	<cycles>3</cycles>
       </FuelFacilityX>
     </config>
   </facility>
@@ -68,10 +69,7 @@ Test input for FuelFacilityX
             <val>freshFuel</val> 
         </in_commods>
         <out_commod>uf</out_commod>
-	<regions>3</regions>
         <thermal_pow>4000</thermal_pow>
-        <core_mass>127000</core_mass>
-	<flux_mode>1</flux_mode>
 	<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
             <val>902250</val>
