@@ -836,6 +836,74 @@ void SpatialPhi(ReactorLiteInfo &core) {
     }*/
 }
 
+// Returns the steady state fluence of the core by refueling with IsoInfo iso
+float SteadyStateFluence(ReactorLiteInfo core, IsoInfo iso) {
+    // Note that the ReactorLiteInfo object is a copy here
+    // Function needs the original ReactorLiteInfo object from tick() as first argument
+    // Assumes region[0] is oldest
+
+    float fluence1 = 0, fluence2 = 0;
+    const unsigned int region = core.region.size();
+
+    // Assign iso to all regions
+    for(int reg_i = 0; reg_i < region; reg_i++) {
+        core.region[reg_i].iso = iso;
+
+        ///TODO think about this more, ran in to this optimization frontier before
+        core.region[reg_i].fluence_ = 0;
+    }
+
+    // Burn fuel once before entering loop
+    BurnFuel(core);
+    fluence2 = core.region[0].fluence_;
+
+    while(std::abs(fluence1 - fluence2)/fluence2 > core.SS_tol_) {
+        fluence1 = fluence2;
+
+        // "reload" fuel by adjusting fluences
+        for(int reg_i = 0; reg_i < region-1; reg_i++) {
+            core.region[reg_i].fluence_ = core.region[reg_i+1].fluence_;
+        }
+        core.region[region-1].fluence_ = 0;
+
+        BurnFuel(core);
+        fluence2 = core.region[0].fluence_;
+    }
+
+    return fluence2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

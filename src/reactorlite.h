@@ -98,13 +98,13 @@ public:
 
         /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
-                      "doc": "commodity that the brightlite reactor consumes", \
+                      "doc": "commodity that reactor-lite consumes", \
                       "schematype": "token", \
                       "uitype": ["oneOrMore", "incommodity"]}
     std::vector<std::string> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
-                      "doc": "commodity that the brightlite supplies", \
+                      "doc": "commodity that reactor-lite supplies", \
                       "uitype": "outcommodity", \
                       "uilabel": "Output"}
     std::string out_commod;
@@ -183,6 +183,11 @@ public:
                       "userlevel": 3, \
                       "tooltip": "The absolute flux calculation convergence requirement."}
     float abs_flux_tol;
+
+    #pragma cyclus var {"default": 0.01, \
+                      "userlevel": 3, \
+                      "tooltip": "The steady state fluence calculation convergence requirement."}
+    float SS_tol;
 
     #pragma cyclus var {"default": 72, \
                         "userlevel": 2, \
