@@ -63,7 +63,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatl
 }
 
 
-// Accept fuel offered
+// Accept fuel offered from source
 void FuelFacilityX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses) {
 
@@ -76,62 +76,45 @@ void FuelFacilityX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<
 }
 
 
-// Offer materials
+// Offer the fuel type this facility holds to ReactorX
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatlBids(
                             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
 
-/*
-    // Offer either a single batch or a full core based on shutdown condition
-    //std::cout << "RX GetMatBid" << std::endl;
+    // Currently offers all available fuel
+
     using cyclus::BidPortfolio;
     using cyclus::CapacityConstraint;
     using cyclus::Converter;
     using cyclus::Material;
     using cyclus::Request;
 
-    cyclus::Context* ctx = context();
     std::set<BidPortfolio<Material>::Ptr> ports;
     BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
 
-    // If its not the end of a cycle dont get rid of your fuel
-    if (ctx->time() != cycle_end_ && storage_.count() == 0){
-        return ports;
-    }
-
-    // If theres nothing to give dont offer anything
-    if (storage_.count() == 0){return ports;}
+    // If theres nothing to give don't offer anything
+    if(inventory.quantity() == 0){return ports;}
 
     // Put everything in inventory to manifest
-    std::vector<cyclus::Material::Ptr> manifest;
-    //removing materials from storage
-    int pop_number = 0;
-    for(int i = 0; i < decay_times_.size(); i++){
-        if(decay_times_[i] > decay_time_){
-            pop_number++;
-        }
-    }
-    manifest = cyclus::ResCast<Material>(storage_.PopN(storage_.count()));
+    const unsigned int inv_count = inventory.count();
+
+    std::vector<cyclus::Material::Ptr> offered_fuel;
+    offered_fuel = cyclus::ResCast<Material>(inventory.PopN(inv_count));
 
     //Offering Bids
     std::vector<Request<Material>*>& requests = commod_requests[out_commod];
     std::vector<Request<Material>*>::iterator it;
-    for (it = requests.begin(); it != requests.end(); ++it) {
+    for(it = requests.begin(); it != requests.end(); ++it) {
         Request<Material>* req = *it;
-        if (req->commodity() == out_commod) {
-            for(int i = 0; i < pop_number; i++) {
-                Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[i]->comp());
-                port->AddBid(req, offer, this);
+        if(req->commodity() == out_commod) {
+            for(int i = 0; i < inv_count; i++) {
+                Material::Ptr offer = Material::CreateUntracked(max_inv_size, offered_fuel[i]->comp());
             }
         }
     }
-    storage_.PushAll(manifest);
+
+    inventory.PushAll(offered_fuel);
     ports.insert(port);
-    //std::cout << "end getmatlbids" << std::endl;
-    return ports;
-*/
-    using cyclus::BidPortfolio;
-    using cyclus::Material;
-    std::set<BidPortfolio<Material>::Ptr> ports;
+
     return ports;
 }
 
