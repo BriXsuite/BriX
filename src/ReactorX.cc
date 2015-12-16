@@ -91,6 +91,10 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlReque
 
     return ports;
     */
+    using cyclus::RequestPortfolio;
+    using cyclus::Material;
+    std::set<RequestPortfolio<Material>::Ptr> ports;
+    return ports;
 }
 
 
@@ -175,6 +179,10 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlBids(
     //std::cout << "end getmatlbids" << std::endl;
     return ports;
 */
+    using cyclus::BidPortfolio;
+    using cyclus::Material;
+    std::set<BidPortfolio<Material>::Ptr> ports;
+    return ports;
 }
 
 // Discharging fuel from the reactor

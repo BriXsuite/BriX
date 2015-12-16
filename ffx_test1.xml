@@ -25,8 +25,8 @@ Test input for FuelFacilityX
     <config>
       <Source>
         <commod>freshFuel</commod>
-        <recipe_name>commod_recipe</recipe_name>
-	<capacity>500000</capacity>
+        <recipe_name>commod_recipe1</recipe_name>
+				<capacity>50</capacity>
       </Source>
     </config>
   </facility>
@@ -44,19 +44,17 @@ Test input for FuelFacilityX
   </facility>
 
   <facility>
-    <name>fuelfacilityx</name>
+    <name>fuelfacility1</name>
     <config>
       <FuelFacilityX>
-        <in_commods>
-            <val>material</val> 
-        </in_commods>
-        <out_commod>freshFuel</out_commod>
+        <in_commod>freshFuel</in_commod>
+        <out_commod>freshtype1</out_commod>
         <libraries>
           <val>extLWR</val>
         </libraries>
-	<fuel_pow_dens>1.12</fuel_pow_dens>
-	<tot_fuel_mass>2000</tot_fuel_mass>
-	<cycles>3</cycles>
+				<fuel_pow_dens>1.12</fuel_pow_dens>
+				<tot_fuel_mass>2000</tot_fuel_mass>
+				<cycles>3</cycles>
       </FuelFacilityX>
     </config>
   </facility>
@@ -66,7 +64,7 @@ Test input for FuelFacilityX
     <config>
       <ReactorX>
         <in_commods>
-            <val>freshFuel</val> 
+            <val>freshtype1</val> 
         </in_commods>
         <out_commod>uf</out_commod>
         <thermal_pow>4000</thermal_pow>
@@ -100,7 +98,7 @@ Test input for FuelFacilityX
           <number>1</number>
         </entry>    
         <entry>
-          <prototype>fuelfacilityx</prototype>
+          <prototype>fuelfacility1</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -117,7 +115,7 @@ Test input for FuelFacilityX
   </region>
 
   <recipe>
-    <name>commod_recipe</name>
+    <name>commod_recipe1</name>
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
