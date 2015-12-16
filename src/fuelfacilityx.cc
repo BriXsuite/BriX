@@ -66,28 +66,13 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatl
 // Accept fuel offered
 void FuelFacilityX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses) {
-/*
-    if(shutdown_ != true){
-        std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
-        cyclus::Composition::Ptr compost;
 
-        if(target_burnup == 0){
-            for (it = responses.begin(); it != responses.end(); ++it) {
-                //std::cout << " incoming mass: " << it->second->quantity() << std::endl;
-                inventory.Push(it->second);
-                compost = it->second->comp();
-                cyclus::CompMap cmap = compost->mass();
-            }
-        } else {
-            //Operational reloading
-            for (it = responses.begin(); it != responses.end(); ++it) {
-                if(it->first.request->commodity() == in_commods[0]){
-                    inventory.Push(it->second);
-                }
-            }
-        }
+    std::vector<std::pair<cyclus::Trade<cyclus::Material>,
+                            cyclus::Material::Ptr> >::const_iterator it;
+
+    for (it = responses.begin(); it != responses.end(); ++it) {
+        inventory.Push(it->second);
     }
-    */
 }
 
 
@@ -150,23 +135,23 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatlBids
     return ports;
 }
 
-// Discharging fuel from the reactor
+// Sending fuel from the facility
 void FuelFacilityX::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
         std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     /*
     using cyclus::Material;
     using cyclus::Trade;
     cyclus::Context* ctx = context();
-    //std::cout << "RX getTRADE START" << std::endl;
+
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
+
     for (it = trades.begin(); it != trades.end(); ++it) {
-        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(storage_.Pop());
-        discharge->Decay(ctx->time());
+        cyclus::Material::Ptr fuel = cyclus::ResCast<Material>(storage_.Pop());
+        fuel->Decay(ctx->time());
         decay_times_.erase(decay_times_.begin());
-        responses.push_back(std::make_pair(*it, discharge));
+        responses.push_back(std::make_pair(*it, fuel));
     }
-    //std::cout << "RX getTRADE end" << std::endl;
-    */
+ */
 }
 
 // WARNING! Do not change the following this function!!! This enables your
