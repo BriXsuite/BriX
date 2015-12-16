@@ -34,6 +34,7 @@ void ReactorX::Tock() {
 
 // The reactor requests the amount of regions it needs
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlRequests() {
+    /// gotta cast all connected fuel facilities here, calculate what's needed and request accordingly
     /*
     using cyclus::RequestPortfolio;
     using cyclus::Material;
