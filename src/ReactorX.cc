@@ -131,78 +131,48 @@ void ReactorX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclu
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorX::GetMatlBids(
                             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
 
-/*
-    // Offer either a single batch or a full core based on shutdown condition
-    //std::cout << "RX GetMatBid" << std::endl;
     using cyclus::BidPortfolio;
     using cyclus::CapacityConstraint;
     using cyclus::Converter;
     using cyclus::Material;
     using cyclus::Request;
+    using fuelfacilityx::FuelFacilityX;
 
     cyclus::Context* ctx = context();
     std::set<BidPortfolio<Material>::Ptr> ports;
-    BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
 
-    // If its not the end of a cycle dont get rid of your fuel
-    if (ctx->time() != cycle_end_ && storage_.count() == 0){
-        return ports;
-    }
-
-    // If theres nothing to give dont offer anything
-    if (storage_.count() == 0){return ports;}
-
-    // Put everything in inventory to manifest
-    std::vector<cyclus::Material::Ptr> manifest;
-    //removing materials from storage
-    int pop_number = 0;
-    for(int i = 0; i < decay_times_.size(); i++){
-        if(decay_times_[i] > decay_time_){
-            pop_number++;
-        }
-    }
-    manifest = cyclus::ResCast<Material>(storage_.PopN(storage_.count()));
-
-    //Offering Bids
-    std::vector<Request<Material>*>& requests = commod_requests[out_commod];
+    /// currently only supporting one fuel facility!
+    std::vector<Request<Material>*>& requests = commod_requests[in_commods[0]];
     std::vector<Request<Material>*>::iterator it;
-    for (it = requests.begin(); it != requests.end(); ++it) {
+    std::map<cyclus::Trader*, int> facility_request;
+
+    // Set up a map for facility requester to number of requests
+    //BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+    for(it = requests.begin(); it != requests.end(); ++it) {
         Request<Material>* req = *it;
-        if (req->commodity() == out_commod) {
-            for(int i = 0; i < pop_number; i++) {
-                Material::Ptr offer = Material::CreateUntracked(core_mass/regions, manifest[i]->comp());
-                port->AddBid(req, offer, this);
+        facility_request[req->requester()] += 1;
+    }
+
+    // Iterate through requesters
+    std::map<cyclus::Trader*, int>::iterator id;
+    for(id = facility_request.begin(); id != facility_request.end(); ++id){
+        // Cast requester as a reactor if possible
+        fuelfacilityx::FuelFacilityX* fuel_facility = dynamic_cast<fuelfacilityx::FuelFacilityX*>(id->first);
+        if (!fuel_facility){
+           throw cyclus::CastError("No reactor for fuelfab facility.");
+        } else {
+            std::cout << "casting works! for example, nonleakage of fuel facility is: " << fuel_facility->nonleakage << std::endl;
             }
         }
-    }
-    storage_.PushAll(manifest);
-    ports.insert(port);
-    //std::cout << "end getmatlbids" << std::endl;
-    return ports;
-*/
-    using cyclus::BidPortfolio;
-    using cyclus::Material;
-    std::set<BidPortfolio<Material>::Ptr> ports;
+
     return ports;
 }
 
 // Discharging fuel from the reactor
 void ReactorX::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
         std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
-    /*
-    using cyclus::Material;
-    using cyclus::Trade;
-    cyclus::Context* ctx = context();
-    //std::cout << "RX getTRADE START" << std::endl;
-    std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-    for (it = trades.begin(); it != trades.end(); ++it) {
-        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(storage_.Pop());
-        discharge->Decay(ctx->time());
-        decay_times_.erase(decay_times_.begin());
-        responses.push_back(std::make_pair(*it, discharge));
-    }
-    //std::cout << "RX getTRADE end" << std::endl;
-    */
+
+
 }
 
 // WARNING! Do not change the following this function!!! This enables your

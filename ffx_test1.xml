@@ -55,6 +55,7 @@ Test input for FuelFacilityX
 				<fuel_pow_dens>1.12</fuel_pow_dens>
 				<tot_fuel_mass>2000</tot_fuel_mass>
 				<cycles>3</cycles>
+				<nonleakage>0.931415</nonleakage>
       </FuelFacilityX>
     </config>
   </facility>
@@ -68,7 +69,7 @@ Test input for FuelFacilityX
         </in_commods>
         <out_commod>uf</out_commod>
         <thermal_pow>4000</thermal_pow>
-	<fluence_timestep>100</fluence_timestep>
+				<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>

@@ -7,6 +7,7 @@
 
 #include "cyclus.h"
 #include "librarytools.h"
+#include "fuelfacilityx.h"
 
 namespace reactorx {
 
