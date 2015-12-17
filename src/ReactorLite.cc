@@ -19,13 +19,22 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
-    //std::cout << "Tick!" << std::endl;
+
+    std::cout << "Tick! Inventory count: " << inventory.count() << " ";
+    int xx = inventory.count();
+    std::vector<cyclus::Material::Ptr> manifest;
+    manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
+    for(int i = 0; i < xx; i++) {
+        std::cout << " " << manifest[i]->quantity();
+    } std::cout << std::endl;
+    inventory.PushAll(manifest);
 
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
         reactor_core_.region.erase(reactor_core_.region.begin());
         storage_.Push(inventory.Pop());
+        if(cycles != 0) {storage_.Push(inventory.Pop());}
         decay_times_.push_back(0);
     }
     if(shutdown_ == true){
@@ -395,21 +404,49 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
 
-        if(target_burnup == 0){
-            // Forward mode
-            for (it = responses.begin(); it != responses.end(); ++it) {
-                std::cout << " incoming mass: " << it->second->quantity() << std::endl;
-                inventory.Push(it->second);
-                compost = it->second->comp();
-                cyclus::CompMap cmap = compost->mass();
-            }
-        } else {
-            //Operational reloading
-            for (it = responses.begin(); it != responses.end(); ++it) {
-                if(it->first.request->commodity() == in_commods[0]){
+        if(cycles == 0) {
+            // Integer batches
+            if(target_burnup == 0){
+                // Forward mode
+                for (it = responses.begin(); it != responses.end(); ++it) {
                     inventory.Push(it->second);
+                    compost = it->second->comp();
+                    cyclus::CompMap cmap = compost->mass();
+                }
+            } else {
+                //Operational reloading
+                for (it = responses.begin(); it != responses.end(); ++it) {
+                    if(it->first.request->commodity() == in_commods[0]){
+                        inventory.Push(it->second);
+                    }
                 }
             }
+        } else {
+            // Non-integer batches
+            if(target_burnup == 0){
+                // Forward mode
+                for (it = responses.begin(); it != responses.end(); ++it) {
+                    // Check if sent material needs to be split
+                    if(it->second->quantity() == odd_mass + even_mass) {
+                        cyclus::Material::Ptr mat2 = it->second->ExtractQty(even_mass);
+
+                        inventory.Push(it->second);
+                        inventory.Push(mat2);
+                    } else {
+                        // Material mass less than total, must be last of initial loading
+                        inventory.Push(it->second);
+                    }
+                }
+
+            } else {
+                //Operational reloading
+                for (it = responses.begin(); it != responses.end(); ++it) {
+                    if(it->first.request->commodity() == in_commods[0]){
+                        inventory.Push(it->second);
+                    }
+                }
+            }
+
         }
     }
 }
@@ -430,26 +467,27 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
     std::set<BidPortfolio<Material>::Ptr> ports;
     BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
 
-    // If its not the end of a cycle dont get rid of your fuel
-    if (ctx->time() != cycle_end_ && storage_.count() == 0){
+    // If its not the end of a cycle don't get rid of your fuel
+    if(ctx->time() != cycle_end_ && storage_.count() == 0) {
         return ports;
     }
 
     // If theres nothing to give dont offer anything
-    if (storage_.count() == 0){return ports;}
+    if(storage_.count() == 0) {return ports;}
 
     // Put everything in inventory to manifest
     std::vector<cyclus::Material::Ptr> manifest;
-    //removing materials from storage
+
+    // Removing materials from storage
     int pop_number = 0;
-    for(int i = 0; i < decay_times_.size(); i++){
-        if(decay_times_[i] > decay_time_){
+    for(int i = 0; i < decay_times_.size(); i++) {
+        if(decay_times_[i] > decay_time_) {
             pop_number++;
         }
     }
     manifest = cyclus::ResCast<Material>(storage_.PopN(storage_.count()));
 
-    //Offering Bids
+    // Offering Bids
     std::vector<Request<Material>*>& requests = commod_requests[out_commod];
     std::vector<Request<Material>*>::iterator it;
     for (it = requests.begin(); it != requests.end(); ++it) {
