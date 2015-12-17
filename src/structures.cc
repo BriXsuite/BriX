@@ -39,7 +39,7 @@ void IsoInfo::Print(int times) {
 }
 
 void RegionInfo::Print() {
-    std::cout << "Fluence: " << fluence_ << " rFlux: " << rflux_;
+    std::cout << "Fluence: " << fluence_ << " rFlux: " << rflux_ << " mass: " << mass_;
     iso.Print();
 }
 
@@ -279,8 +279,8 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
     // Number of regions consistency check and fix
     if (manifest_size > region.size()) {
         RegionInfo new_region;
-        new_region.mass_ = core_mass_/regions_;
         for (int i = 0; i < manifest_size - region.size(); i++){
+            std::cout << " xxx" << std::endl;
             region.push_back(new_region);
         }
     }
@@ -293,6 +293,9 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
         // Builds correct isoinfo and fraction of every isotope in each batch
         comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
         int comp_iso;
+
+        // Update mass
+        region[i].mass_ = manifest[i]->quantity();
 
         // If a region has fluence the library must already have been built
         if (region[i].fluence_ == 0) {

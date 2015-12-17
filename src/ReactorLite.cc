@@ -32,10 +32,15 @@ void ReactorLite::Tick() {
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
+        std::cout << "erase time" << std::endl;
         reactor_core_.region.erase(reactor_core_.region.begin());
         storage_.Push(inventory.Pop());
-        if(cycles != 0) {storage_.Push(inventory.Pop());}
         decay_times_.push_back(0);
+        if(cycles != 0) {
+                //reactor_core_.region.erase(reactor_core_.region.begin());
+                storage_.Push(inventory.Pop());
+                decay_times_.push_back(0);
+        }
     }
     if(shutdown_ == true){
         for(int i = 0; i < inventory.count(); i++){
@@ -215,6 +220,10 @@ void ReactorLite::Tock() {
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
 
+    for(int i = 0; i < reactor_core_.region.size(); i++) {
+        //reactor_core_.region[i].Print();
+    }
+
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
 
@@ -347,15 +356,24 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
 
         CompMap cm;
         Material::Ptr target = Material::CreateUntracked(odd_mass + even_mass, Composition::CreateFromAtom(cm));
-        Material::Ptr target2 = Material::CreateUntracked(odd_mass, Composition::CreateFromAtom(cm));
 
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
         float qty;
 
         if (inventory.count() == 0) {
             // First loading, all regions need to be loaded with fuel
+            Material::Ptr target2 = Material::CreateUntracked(odd_mass, Composition::CreateFromAtom(cm));
+
             if (target_burnup == 0) {
                 // Forward mode
+
+                // Add the final odd batch request first
+                if(in_commods.size() > pairs+1){
+                    port->AddRequest(target2, this, in_commods[pairs+1]);
+                } else {
+                    port->AddRequest(target2, this, in_commods[0]);
+                }
+
                 for(int i = 0; i < pairs; i++){
                 // Handles if initial load regions are defined
                 // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
@@ -364,12 +382,6 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
                     } else {
                         port->AddRequest(target, this, in_commods[0]);
                     }
-                }
-                // Add the final odd batch request
-                if(in_commods.size() > pairs+1){
-                    port->AddRequest(target2, this, in_commods[pairs+1]);
-                } else {
-                    port->AddRequest(target2, this, in_commods[0]);
                 }
 
             } else {
@@ -429,9 +441,10 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
                     // Check if sent material needs to be split
                     if(it->second->quantity() == odd_mass + even_mass) {
                         cyclus::Material::Ptr mat2 = it->second->ExtractQty(even_mass);
+                        std::cout << "pushing two to inventory" << std::endl;
 
-                        inventory.Push(it->second);
                         inventory.Push(mat2);
+                        inventory.Push(it->second);
                     } else {
                         // Material mass less than total, must be last of initial loading
                         inventory.Push(it->second);
