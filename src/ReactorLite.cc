@@ -289,22 +289,22 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
 
     // Check refuel time
     cyclus::Context* ctx = context();
-    if((ctx->time() != cycle_end_ && inventory.count() != 0) || shutdown_ == true  ||
+    if ((ctx->time() != cycle_end_ && inventory.count() != 0) || shutdown_ == true  ||
        outage_remaining_ > 0) {return ports;}
 
-    CompMap cm;
-    Material::Ptr target = Material::CreateUntracked(1, Composition::CreateFromAtom(cm));
+    if(cycles == 0) {
+        // Integer batches
 
-    RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
-    float qty;
+        CompMap cm;
+        Material::Ptr target = Material::CreateUntracked(core_mass/regions, Composition::CreateFromAtom(cm));
 
-    if(inventory.count() == 0) {
-        // First loading, all regions need to be loaded with fuel
+        RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
+        float qty;
 
-        if(target_burnup == 0) {
-            // Forward mode
-
-            if(cycles == 0) {
+        if (inventory.count() == 0) {
+            // First loading, all regions need to be loaded with fuel
+            if (target_burnup == 0) {
+                // Forward mode
                 for(int i = 0; i < regions; i++){
                 // Handles if initial load regions are defined
                 // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
@@ -315,43 +315,73 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
                     }
                 }
             } else {
-                std::cout << "Startup loading" << std::endl;
-                for(int i = 0; i < std::ceil(cycles); i++) {
-                    std::cout << "request! " << std::endl;
+                // Blending mode
+                for(int i = 0; i < regions; i++){
+                    port->AddRequest(target, this, in_commods[0]);
+                }
+            }
+            qty = core_mass;
+        } else {
+            // One region refuel
+            port->AddRequest(target, this, in_commods[0]);
+            qty = core_mass/regions;
+        }
+
+        CapacityConstraint<Material> cc(qty);
+
+        port->AddConstraint(cc);
+        ports.insert(port);
+
+    } else {
+        // Non-integer batches
+        const unsigned int pairs = std::floor(cycles);
+
+        CompMap cm;
+        Material::Ptr target = Material::CreateUntracked(odd_mass + even_mass, Composition::CreateFromAtom(cm));
+        Material::Ptr target2 = Material::CreateUntracked(odd_mass, Composition::CreateFromAtom(cm));
+
+        RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
+        float qty;
+
+        if (inventory.count() == 0) {
+            // First loading, all regions need to be loaded with fuel
+            if (target_burnup == 0) {
+                // Forward mode
+                for(int i = 0; i < pairs; i++){
+                // Handles if initial load regions are defined
+                // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
                     if(in_commods.size() > i+1){
                         port->AddRequest(target, this, in_commods[i+1]);
                     } else {
                         port->AddRequest(target, this, in_commods[0]);
                     }
                 }
+                // Add the final odd batch request
+                if(in_commods.size() > pairs+1){
+                    port->AddRequest(target2, this, in_commods[pairs+1]);
+                } else {
+                    port->AddRequest(target2, this, in_commods[0]);
+                }
+
+            } else {
+                // Blending mode
+                for(int i = 0; i < regions; i++){
+                    port->AddRequest(target, this, in_commods[0]);
+                }
             }
+            qty = core_mass;
+
         } else {
-            // Blending mode
-
-            for(int i = 0; i < regions; i++){
-                port->AddRequest(target, this, in_commods[0]);
-            }
-        }
-        qty = core_mass;
-        ///todo support blending for non-integer batches
-
-    } else {
-        if(cycles == 0) {
             // One region refuel
             port->AddRequest(target, this, in_commods[0]);
-            qty = core_mass/regions;
-
-        } else {
-            // 1 odd and 1 even region to refuel, take them together from source
-            port->AddRequest(target, this, in_commods[0]);
-            qty = even_mass + odd_mass;
+            qty = odd_mass + even_mass;
         }
+
+        CapacityConstraint<Material> cc(qty);
+
+        port->AddConstraint(cc);
+        ports.insert(port);
     }
-
-    CapacityConstraint<Material> cc(qty);
-
-    port->AddConstraint(cc);
-    ports.insert(port);
 
     return ports;
 }
@@ -366,8 +396,9 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
         cyclus::Composition::Ptr compost;
 
         if(target_burnup == 0){
+            // Forward mode
             for (it = responses.begin(); it != responses.end(); ++it) {
-                //std::cout << " incoming mass: " << it->second->quantity() << std::endl;
+                std::cout << " incoming mass: " << it->second->quantity() << std::endl;
                 inventory.Push(it->second);
                 compost = it->second->comp();
                 cyclus::CompMap cmap = compost->mass();
