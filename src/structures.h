@@ -121,6 +121,7 @@ class ReactorLiteInfo {
 public:
     // Initialized during startup
     unsigned int regions_;  // Total number of regions/batches
+    float cycles_ = 0;          // Number of cycles fuel resides in core
     float thermal_pow_;     // Reactor thermal power [MWth]
     float core_mass_;       // Total mass of all fuel in [kg]
     float target_BU_;       // Target burnup in [MWd/kgIHM]

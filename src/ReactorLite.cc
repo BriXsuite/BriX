@@ -19,6 +19,8 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
+    //std::cout << "Tick!" << std::endl;
+
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
@@ -57,7 +59,7 @@ void ReactorLite::Tick() {
     /// Library blending goes here, start by checking if libraries.size() > 1
     // Record relevant user data in reactor_core_
     reactor_core_.libraries_ = libraries;
-    reactor_core_.regions_ = regions;
+    reactor_core_.cycles_ = cycles;
     reactor_core_.thermal_pow_ = thermal_pow;
     reactor_core_.core_mass_ = core_mass;
     reactor_core_.target_BU_ = target_burnup;
@@ -77,11 +79,42 @@ void ReactorLite::Tick() {
     // Regions are populated based on reactor parameters
     RegionInfo region;
 
-    for (int i = 0; i < regions; i++) {
-        // ReactorLite has regions of equal mass
-        region.mass_ = core_mass/regions;
+    if(cycles == 0) {
+        // Assume integer batches
+        reactor_core_.regions_ = regions;
+    } else {
+        // Non-integer batches
+        reactor_core_.regions_ = std::floor(cycles) * 2 + 1;
+        reactor_core_.cycles_ = cycles;
+        std::cout << "  Reactor operating with non-integer batches, fuel groups: " << reactor_core_.regions_ << std::endl;
+    }
 
-        reactor_core_.region.push_back(region);
+    if(cycles == 0) {
+        for (int i = 0; i < regions; i++) {
+            // ReactorLite has regions of equal mass
+            region.mass_ = core_mass/regions;
+
+            reactor_core_.region.push_back(region);
+        }
+    } else {
+        // Even-cycle batch mass fraction, relative to odd-cycle batch mass
+        float even_frac = (std::ceil(cycles) - cycles) / (cycles - std::floor(cycles));
+
+        // Total fraction (there's an extra odd at the end)
+        float tot_frac = (even_frac + 1) * std::floor(cycles) + 1;
+
+        // Actual mass calculation
+        float odd_mass = core_mass / tot_frac;
+        float even_mass = core_mass / tot_frac * even_frac;
+
+        std::cout << " Odd: " << odd_mass << "  Even: " << even_mass << std::endl;
+
+        for (int i = 0; i < regions; i++) {
+            // Odd and even regions get different masses
+            region.mass_ = core_mass/regions;
+
+            reactor_core_.region.push_back(region);
+        }
     }
 
     // Add structural material info

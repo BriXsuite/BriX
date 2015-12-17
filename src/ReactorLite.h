@@ -147,6 +147,11 @@ public:
                       "default": 3}
     int regions;
 
+    #pragma cyclus var {"tooltip": "Average cycles fuel resides in the core, leave zero if cycles is integer", \
+                      "userlevel": 1, \
+                      "default": 0}
+    float cycles;
+
     #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
                       "default": {}, \
