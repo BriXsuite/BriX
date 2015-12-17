@@ -79,17 +79,11 @@ void ReactorLite::Tick() {
     // Regions are populated based on reactor parameters
     RegionInfo region;
 
+    // Check batches/cycles and calculate masses accordingly
     if(cycles == 0) {
         // Assume integer batches
         reactor_core_.regions_ = regions;
-    } else {
-        // Non-integer batches
-        reactor_core_.regions_ = std::floor(cycles) * 2 + 1;
-        reactor_core_.cycles_ = cycles;
-        std::cout << "  Reactor operating with non-integer batches, fuel groups: " << reactor_core_.regions_ << std::endl;
-    }
 
-    if(cycles == 0) {
         for (int i = 0; i < regions; i++) {
             // ReactorLite has regions of equal mass
             region.mass_ = core_mass/regions;
@@ -97,6 +91,11 @@ void ReactorLite::Tick() {
             reactor_core_.region.push_back(region);
         }
     } else {
+        // Non-integer batches
+        reactor_core_.regions_ = std::floor(cycles) * 2 + 1;
+        reactor_core_.cycles_ = cycles;
+        std::cout << "  Reactor operating with non-integer batches, fuel groups: " << reactor_core_.regions_ << std::endl;
+
         // Even-cycle batch mass fraction, relative to odd-cycle batch mass
         float even_frac = (std::ceil(cycles) - cycles) / (cycles - std::floor(cycles));
 
@@ -104,17 +103,18 @@ void ReactorLite::Tick() {
         float tot_frac = (even_frac + 1) * std::floor(cycles) + 1;
 
         // Actual mass calculation
-        float odd_mass = core_mass / tot_frac;
-        float even_mass = core_mass / tot_frac * even_frac;
+        odd_mass = core_mass / tot_frac;
+        even_mass = core_mass / tot_frac * even_frac;
 
-        std::cout << " Odd: " << odd_mass << "  Even: " << even_mass << std::endl;
+        // Initiate "regions" number of regions for all_regions
+        region.mass_ = odd_mass;
+        vector<RegionInfo> all_regions(reactor_core_.regions_, region);
 
-        for (int i = 0; i < regions; i++) {
-            // Odd and even regions get different masses
-            region.mass_ = core_mass/regions;
-
-            reactor_core_.region.push_back(region);
+        for(int i = 1; i < reactor_core_.regions_; i += 2) {
+            // Even regions get different mass
+            all_regions[i].mass_ = even_mass;
         }
+        reactor_core_.region = all_regions;
     }
 
     // Add structural material info
@@ -289,28 +289,40 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
 
     // Check refuel time
     cyclus::Context* ctx = context();
-    if ((ctx->time() != cycle_end_ && inventory.count() != 0) || shutdown_ == true  ||
+    if((ctx->time() != cycle_end_ && inventory.count() != 0) || shutdown_ == true  ||
        outage_remaining_ > 0) {return ports;}
 
     CompMap cm;
-    Material::Ptr target = Material::CreateUntracked(core_mass/regions, Composition::CreateFromAtom(cm));
+    Material::Ptr target = Material::CreateUntracked(1, Composition::CreateFromAtom(cm));
 
     RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
     float qty;
 
-    if (inventory.count() == 0) {
+    if(inventory.count() == 0) {
         // First loading, all regions need to be loaded with fuel
 
-        if (target_burnup == 0) {
+        if(target_burnup == 0) {
             // Forward mode
 
-            for(int i = 0; i < regions; i++){
-            // Handles if initial load regions are defined
-            // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
-                if(in_commods.size() > i+1){
-                    port->AddRequest(target, this, in_commods[i+1]);
-                } else {
-                    port->AddRequest(target, this, in_commods[0]);
+            if(cycles == 0) {
+                for(int i = 0; i < regions; i++){
+                // Handles if initial load regions are defined
+                // Checks to see if there is a next in_commod to request, otherwise defualts to in_commods[0]
+                    if(in_commods.size() > i+1){
+                        port->AddRequest(target, this, in_commods[i+1]);
+                    } else {
+                        port->AddRequest(target, this, in_commods[0]);
+                    }
+                }
+            } else {
+                std::cout << "Startup loading" << std::endl;
+                for(int i = 0; i < std::ceil(cycles); i++) {
+                    std::cout << "request! " << std::endl;
+                    if(in_commods.size() > i+1){
+                        port->AddRequest(target, this, in_commods[i+1]);
+                    } else {
+                        port->AddRequest(target, this, in_commods[0]);
+                    }
                 }
             }
         } else {
@@ -321,11 +333,19 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
             }
         }
         qty = core_mass;
-    } else {
-        // One region refuel
+        ///todo support blending for non-integer batches
 
-        port->AddRequest(target, this, in_commods[0]);
-        qty = core_mass/regions;
+    } else {
+        if(cycles == 0) {
+            // One region refuel
+            port->AddRequest(target, this, in_commods[0]);
+            qty = core_mass/regions;
+
+        } else {
+            // 1 odd and 1 even region to refuel, take them together from source
+            port->AddRequest(target, this, in_commods[0]);
+            qty = even_mass + odd_mass;
+        }
     }
 
     CapacityConstraint<Material> cc(qty);
