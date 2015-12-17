@@ -221,7 +221,7 @@ void ReactorLite::Tock() {
     const float BU_prev = reactor_core_.CalcBU();
 
     for(int i = 0; i < reactor_core_.region.size(); i++) {
-        //reactor_core_.region[i].Print();
+        reactor_core_.region[i].Print();
     }
 
     // Advance fluences accordingly
