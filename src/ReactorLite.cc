@@ -19,7 +19,7 @@ std::string ReactorLite::str() {
 
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
-
+/*
     std::cout << "Tick! Inventory count: " << inventory.count() << " ";
     int xx = inventory.count();
     std::vector<cyclus::Material::Ptr> manifest;
@@ -28,11 +28,10 @@ void ReactorLite::Tick() {
         std::cout << " " << manifest[i]->quantity();
     } std::cout << std::endl;
     inventory.PushAll(manifest);
-
+*/
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
-        std::cout << "erase time" << std::endl;
         reactor_core_.region.erase(reactor_core_.region.begin());
         storage_.Push(inventory.Pop());
         decay_times_.push_back(0);
@@ -220,10 +219,6 @@ void ReactorLite::Tock() {
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
 
-    for(int i = 0; i < reactor_core_.region.size(); i++) {
-        reactor_core_.region[i].Print();
-    }
-
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
 
@@ -285,6 +280,10 @@ void ReactorLite::Tock() {
         std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4)
                 << reactor_core_.region[0].CalcBU() //TODO << "  Batch CR: " << reactor_core_.region[0].CR_
                 << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+        if(cycles != 0) {
+        std::cout << "   2nd region BU: "  << std::setprecision(4)
+            << reactor_core_.region[1].CalcBU() << std::endl;
+        }
     }
 
     ///TODO move this to material exchange
@@ -441,7 +440,6 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
                     // Check if sent material needs to be split
                     if(it->second->quantity() == odd_mass + even_mass) {
                         cyclus::Material::Ptr mat2 = it->second->ExtractQty(even_mass);
-                        std::cout << "pushing two to inventory" << std::endl;
 
                         inventory.Push(mat2);
                         inventory.Push(it->second);

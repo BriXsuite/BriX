@@ -91,7 +91,7 @@ struct LibInfo {
 // Information about the fuel region
 class RegionInfo {
 public:
-    float mass_;             // Mass of region, equal for all regions in ReactorLite
+    float mass_;             // Mass of region
 
     IsoInfo iso;             // Collapsed, isoinfo for region
     std::map<int,float> fractions; // Name and fraction of each isotope for iso building

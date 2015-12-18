@@ -266,11 +266,9 @@ void ReactorLiteInfo::PrintFluences() {
     std::cout << std::endl;
 }
 
-
 // Updates the fractions of regions, builds new regions if they're empty
 void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifest) {
     unsigned const int manifest_size = manifest.size();
-
 
     if (manifest_size != regions_) {
         std::cout << "ReactorLite manifest size and region size mismatch!" << std::endl;
@@ -280,7 +278,6 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
     if (manifest_size > region.size()) {
         RegionInfo new_region;
         for (int i = 0; i < manifest_size - region.size(); i++){
-            std::cout << " xxx" << std::endl;
             region.push_back(new_region);
         }
     }
@@ -360,9 +357,9 @@ float ReactorLiteInfo::CalcBU() {
     unsigned const int regions = region.size();
     float total_BU = 0;
     for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
-        total_BU += region[reg_i].CalcBU();
+        total_BU += region[reg_i].CalcBU() * region[reg_i].mass_;
     }
-    return total_BU / regions;
+    return total_BU / core_mass_;
 }
 
 // Returns the burnup if the reactor at given flux; using rflux_ and fluence_timestep_
@@ -373,10 +370,10 @@ float ReactorLiteInfo::CalcBU(float flux) {
 
     for(int reg_i = 0; reg_i < regions; reg_i++) {
         fluence = region[reg_i].fluence_ + (region[reg_i].rflux_ * flux * fluence_timestep_);
-        burnup += region[reg_i].CalcBU(fluence);
+        burnup += region[reg_i].CalcBU(fluence) * region[reg_i].mass_;
     }
 
-    return burnup / regions;
+    return burnup / core_mass_;
 }
 
 
