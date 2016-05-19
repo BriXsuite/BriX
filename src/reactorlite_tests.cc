@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ReactorLite.h"
+#include "reactorlite.h"
 
 #include "agent_tests.h"
 #include "context.h"

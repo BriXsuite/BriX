@@ -10,9 +10,9 @@ INSTALL(TARGETS brix
     LIBRARY DESTINATION lib/cyclus
     COMPONENT brix
     )
-use_cyclus("BriX" "ReactorLite")
+use_cyclus("BriX" "reactorlite")
 use_cyclus("BriX" "fuelfacilityx")
-use_cyclus("BriX" "ReactorX")
+use_cyclus("BriX" "reactorX")
 install_cyclus_module("BriX" "")
 TARGET_LINK_LIBRARIES(BriX brix)
 TARGET_LINK_LIBRARIES(BriX_unit_tests brix)

@@ -1,4 +1,4 @@
-#include "ReactorLite.h"
+#include "reactorlite.h"
 #include "structures.h"
 
 namespace reactorlite {
