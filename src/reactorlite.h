@@ -315,6 +315,7 @@ private:
     float pow_per_time_ = 0;
     float pow_over_ = 0;
     float outage_time_ = 0;
+    float time_step_;
 
 };
 

@@ -20,7 +20,7 @@ std::string ReactorLite::str() {
 // First tick initializes the reactor. Not used later.
 void ReactorLite::Tick() {
     cyclus::Context* ctx = context();
-    // Return if this is not the first tick
+    // If this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
         reactor_core_.region.erase(reactor_core_.region.begin());
         storage_.Push(inventory.Pop());
@@ -33,10 +33,13 @@ void ReactorLite::Tick() {
         reactor_core_.region.clear();
         storage_.PushAll(inventory.PopN(inventory.count()));
     }
-
     if (start_time_ != ctx->time()) {return;}
     // First tick, the rest of Tick() is like a constructor
-
+    if (ctx->sim_info().branch_time == -1){
+        time_step_ = 28.;
+    } else {
+        time_step_ = ctx->sim_info().branch_time;
+    }
     // Inform user reactor is starting up
     if (target_burnup == 0) {
         std::cout << ctx->time()<< " New ReactorLite " << libraries[0] <<
@@ -136,25 +139,25 @@ void ReactorLite::Tock() {
             return;
         } else {
             // if outage ends during same month as shutdown
-            if (pow_over_ + outage_time_ < 28.) {
-                pow_frac_ = 1. - outage_time_/28.;
+            if (pow_over_ + outage_time_ < time_step_) {
+                pow_frac_ = 1. - outage_time_/time_step_;
                 pow_per_time_ = thermal_pow * pow_frac_ * thermal_efficiency;
             // if outage ends the month following the shutdown
-            } else if (pow_over_ + outage_time_ >= 28. && pow_over_ + outage_time_ < 56.) {
-                pow_frac_ = 2 - (pow_over_ + outage_time_)/28.;
-                float x = pow_over_/28.;
+            } else if (pow_over_ + outage_time_ >= time_step_ && pow_over_ + outage_time_ < time_step_*2.) {
+                pow_frac_ = 2 - (pow_over_ + outage_time_)/time_step_;
+                float x = pow_over_/time_step_;
                 outage_remaining_ = 1;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
             // if outage lasts more than the month after shutdown
             } else {
                 outage_remaining_ = 2;
-                while (pow_over_ + outage_time_ > outage_remaining_*28.) {
+                while (pow_over_ + outage_time_ > outage_remaining_*time_step_) {
                     outage_remaining_++;
                 }
-                pow_frac_ = outage_remaining_-(pow_over_ + outage_time_)/28.;
+                pow_frac_ = outage_remaining_-(pow_over_ + outage_time_)/time_step_;
                 outage_remaining_--;
-                float x = pow_over_/28.;
+                float x = pow_over_/time_step_;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, thermal_pow*x*thermal_efficiency);
                 return;
             }
@@ -202,10 +205,10 @@ void ReactorLite::Tock() {
     // Cycle length update
     if(cycle_length > 0){ // Cycle length override
         cycle_end_ = ctx->time() + cycle_length;
-        pow_over_ =  28. * ((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
+        pow_over_ =  time_step_ * ((delta_BU*core_mass/thermal_pow/time_step_)-floor(delta_BU*core_mass/thermal_pow/time_step_));
     } else {
-        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/thermal_pow/28.);
-        pow_over_ =  28*((delta_BU*core_mass/thermal_pow/28)-floor(delta_BU*core_mass/thermal_pow/28));
+        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/thermal_pow/time_step_);
+        pow_over_ =  time_step_*((delta_BU*core_mass/thermal_pow/time_step_)-floor(delta_BU*core_mass/thermal_pow/time_step_));
 
         // If the cycle length is less than 2 the fluence of regions may build up.
         if(cycle_end_ - ctx->time() < 1){
