@@ -46,31 +46,39 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     float value;
     string buffer;
     string line;
+    std::vector<float> temp_days;
+    std::vector<float> temp_flux;
 
     while(getline(inf, line)){
         istringstream iss(line);
         iss >> buffer;
-        if (i >= 4){
+        std::cout << i << std::endl;
+        if (i >= 5){
             Daughter daughter;
             daughter.name = pyne::nucname::zzaaam(buffer);
             while (iss >> value){
                 daughter.mass.push_back(value);
             }
             iso.iso_vector.push_back(daughter);
-        } else {
+        } else {        
             while (iss >> value){
                 if (i == 0){
-                    iso.fluence.push_back(value*flux_value*84600);
+                    temp_days.push_back(value*84600.);
                 } else if (i == 1){
-                    iso.neutron_prod.push_back(value);
+                    temp_flux.push_back(value);
                 } else if (i == 2){
-                    iso.neutron_dest.push_back(value);
+                    iso.neutron_prod.push_back(value);
                 } else if (i == 3){
+                    iso.neutron_dest.push_back(value);
+                } else if (i == 4){
                     iso.BU.push_back(value);
                 }
             }
             i++;
         }
+    }
+    for(int j = 0; j < temp_days.size(); j++){
+        iso.fluence.push_back(temp_days[j] * temp_flux[j]);
     }
     inf.close();
 
