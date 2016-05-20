@@ -52,7 +52,6 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     while(getline(inf, line)){
         istringstream iss(line);
         iss >> buffer;
-        std::cout << i << std::endl;
         if (i >= 5){
             Daughter daughter;
             daughter.name = pyne::nucname::zzaaam(buffer);
@@ -62,23 +61,29 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
             iso.iso_vector.push_back(daughter);
         } else {        
             while (iss >> value){
-                if (i == 0){
+                if (buffer == "TIME"){
                     temp_days.push_back(value*84600.);
-                } else if (i == 1){
+                } else if (buffer == "phi_tot"){
                     temp_flux.push_back(value);
-                } else if (i == 2){
+                } else if (buffer == "NEUT_PROD"){
                     iso.neutron_prod.push_back(value);
-                } else if (i == 3){
+                } else if (buffer == "NEUT_DEST"){
                     iso.neutron_dest.push_back(value);
-                } else if (i == 4){
+                } else if (buffer == "BUd"){
                     iso.BU.push_back(value);
                 }
             }
             i++;
         }
     }
-    for(int j = 0; j < temp_days.size(); j++){
-        iso.fluence.push_back(temp_days[j] * temp_flux[j]);
+    if(temp_flux.size() > 0){
+        for(int j = 0; j < temp_days.size(); j++){
+            iso.fluence.push_back(temp_days[j] * temp_flux[j]);
+        }
+    } else {
+        for(int j = 0; j < temp_days.size(); j++){
+            iso.fluence.push_back(temp_days[j] * 3.E14);
+        } 
     }
     inf.close();
 
