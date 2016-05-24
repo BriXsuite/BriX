@@ -131,6 +131,7 @@ public:
     std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
 
     float abs_flux_tol_;    // Convergence tolerance for absolute flux calculation
+    float SS_tol_;          // Convergence tolerance for steady state fluence calculation
 
     unsigned int flux_mode_;// Flux calculation mode:
     // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
@@ -149,6 +150,7 @@ public:
     // Regions are populated based on reactor parameters
     std::vector<RegionInfo> region;  // region[0] is oldest
 
+    bool ConsistencyCheck();    // Makes sure there are no contradicting inputs
     void PrintRegionIsos();
     void PrintFluences();
     void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
@@ -157,6 +159,59 @@ public:
     void UpdateComp();          // Updates the composition of isotopes in all regions
     float CalcBU();             // Calculates the burnup of the core
     float CalcBU(float flux);   // Calculates the burnup if reactor at given flux
+};
+
+// A fuel type is based on one library
+class FuelType {
+    unsigned int f_groups_; // Fuel groups of this fuel type
+    LibInfo library_;       // The library of the fuel group
+
+
+};
+
+class ReactorXInfo {
+    /*
+public:
+    // Initialized during startup
+    float thermal_pow_;     // Reactor thermal power [MWth]
+    float target_BU_;       // Target burnup in [MWd/kgIHM]
+    float target_CR_;       // Target conversion ratio
+    float pnl;              // Nonleakage probability
+    float fluence_timestep_;// Fluence propagation time step [second]
+    float base_flux_;       // Library base flux or last cycle flux
+    std::vector<int> CR_fissile_; // List of fissile isotopes for CR calc
+
+    float abs_flux_tol_;    // Convergence tolerance for absolute flux calculation
+    float SS_tol_;          // Convergence tolerance for steady state fluence calculation
+
+    unsigned int flux_mode_;// Flux calculation mode:
+    // 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Spatial
+    unsigned int DA_mode_;  // Disadvantage factor. 0:OFF, 1:ON
+
+    SpatialParamsLite spatial_; // Spatial flux calculation parameters
+    DisadvParams DA_;           // DA calculation parameters
+
+    float struct_prod_ = 0;  // Non-fuel material neutron prod
+    float struct_dest_ = 0;  // Non-fuel material neutron dest
+
+    std::vector<std::string> libraries_;
+    LibInfo library_;
+    float CR_;
+
+    // Regions are populated based on reactor parameters
+    unsigned int regions_;  // calculated total number of regions
+    float core_mass_;       // Total mass of all fuel in [kg]
+    std::vector<RegionInfo> region;  // region[0] is oldest
+
+    void PrintRegionIsos();
+    void PrintFluences();
+    void UpdateFractions(std::vector<cyclus::Material::Ptr> manifest);
+    void BuildRegionIsos();
+    void Reorder();             // Reorders regions from lowest k to highest
+    void UpdateComp();          // Updates the composition of isotopes in all regions
+    float CalcBU();             // Calculates the burnup of the core
+    float CalcBU(float flux);   // Calculates the burnup if reactor at given flux
+    */
 };
 
 extern std::map<std::string, LibInfo> global_libs;

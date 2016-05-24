@@ -46,31 +46,44 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     float value;
     string buffer;
     string line;
+    std::vector<float> temp_days;
+    std::vector<float> temp_flux;
 
     while(getline(inf, line)){
         istringstream iss(line);
         iss >> buffer;
-        if (i >= 4){
+        if (i >= 5){
             Daughter daughter;
             daughter.name = pyne::nucname::zzaaam(buffer);
             while (iss >> value){
                 daughter.mass.push_back(value);
             }
             iso.iso_vector.push_back(daughter);
-        } else {
+        } else {        
             while (iss >> value){
-                if (i == 0){
-                    iso.fluence.push_back(value*flux_value*84600);
-                } else if (i == 1){
+                if (buffer == "TIME"){
+                    temp_days.push_back(value*84600.);
+                } else if (buffer == "phi_tot"){
+                    temp_flux.push_back(value);
+                } else if (buffer == "NEUT_PROD"){
                     iso.neutron_prod.push_back(value);
-                } else if (i == 2){
+                } else if (buffer == "NEUT_DEST"){
                     iso.neutron_dest.push_back(value);
-                } else if (i == 3){
+                } else if (buffer == "BUd"){
                     iso.BU.push_back(value);
                 }
             }
             i++;
         }
+    }
+    if(temp_flux.size() > 0){
+        for(int j = 0; j < temp_days.size(); j++){
+            iso.fluence.push_back(temp_days[j] * temp_flux[j]);
+        }
+    } else {
+        for(int j = 0; j < temp_days.size(); j++){
+            iso.fluence.push_back(temp_days[j] * 3.E14);
+        } 
     }
     inf.close();
 
@@ -835,6 +848,74 @@ void SpatialPhi(ReactorLiteInfo &core) {
         core.region[reg_i].rflux_ = flux[reg_i];
     }*/
 }
+
+// Returns the steady state fluence of the core by refueling with IsoInfo iso
+float SteadyStateFluence(ReactorLiteInfo core, IsoInfo iso) {
+    // Note that the ReactorLiteInfo object is a copy here
+    // Function needs the original ReactorLiteInfo object from tick() as first argument
+    // Assumes region[0] is oldest
+
+    float fluence1 = 0, fluence2 = 0;
+    const unsigned int region = core.region.size();
+
+    // Assign iso to all regions
+    for(int reg_i = 0; reg_i < region; reg_i++) {
+        core.region[reg_i].iso = iso;
+
+        ///TODO think about this more, ran in to this optimization frontier before
+        core.region[reg_i].fluence_ = 0;
+    }
+
+    // Burn fuel once before entering loop
+    BurnFuel(core);
+    fluence2 = core.region[0].fluence_;
+
+    while(std::abs(fluence1 - fluence2)/fluence2 > core.SS_tol_) {
+        fluence1 = fluence2;
+
+        // "reload" fuel by adjusting fluences
+        for(int reg_i = 0; reg_i < region-1; reg_i++) {
+            core.region[reg_i].fluence_ = core.region[reg_i+1].fluence_;
+        }
+        core.region[region-1].fluence_ = 0;
+
+        BurnFuel(core);
+        fluence2 = core.region[0].fluence_;
+    }
+
+    return fluence2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,24 +1,27 @@
-#include "ReactorLite.h"
+#include "fuelfacilityx.h"
 #include "structures.h"
 
-namespace reactorlite {
+namespace fuelfacilityx {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ReactorLite::ReactorLite(cyclus::Context* ctx) : cyclus::Facility(ctx) {
+FuelFacilityX::FuelFacilityX(cyclus::Context* ctx) : cyclus::Facility(ctx) {
+/*
     start_time_ = ctx->time();  // Start time is the current time
     cycle_end_ = start_time_;   // First cycle happens at the start time
-
+*/
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-std::string ReactorLite::str() {
+std::string FuelFacilityX::str() {
   return Facility::str();
 }
 
 //std::map<std::string, LibInfo> global_libs;
 
 // First tick initializes the reactor. Not used later.
-void ReactorLite::Tick() {
+void FuelFacilityX::Tick() {
+    std::cout << "Hello world, I am FuelFacilityX" << std::endl;
+/*
     cyclus::Context* ctx = context();
     // Return if this is not the first tick
     if(cycle_end_ == ctx->time() && inventory.count() > 0){
@@ -39,7 +42,7 @@ void ReactorLite::Tick() {
 
     // Inform user reactor is starting up
     if (target_burnup == 0) {
-        std::cout << ctx->time()<< " New ReactorLite " << libraries[0] <<
+        std::cout << ctx->time()<< " New FuelFacilityX " << libraries[0] <<
         " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
     } else {
         std::cout << ctx->time() << " New ReactorLite " << libraries[0] <<
@@ -69,6 +72,7 @@ void ReactorLite::Tick() {
     reactor_core_.flux_mode_ = flux_mode;
     reactor_core_.DA_mode_ = DA_mode;
     reactor_core_.abs_flux_tol_ = abs_flux_tol;
+    reactor_core_.SS_tol_ = SS_tol;
     for(int iso_i = 0; iso_i < CR_fissile.size(); iso_i++) {
             reactor_core_.CR_fissile_.push_back(std::stoi(CR_fissile[iso_i]));
     }
@@ -108,10 +112,12 @@ void ReactorLite::Tick() {
         reactor_core_.DA_.mod_Sig_s = DA_mod_Sig_s;
         reactor_core_.DA_.fuel_Sig_s = DA_fuel_Sig_s;
     }
+*/
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void ReactorLite::Tock() {
+void FuelFacilityX::Tock() {
+/*
     if (inventory.count() == 0) {UpdateStorage(decay_times_); return;}
     if (shutdown_) {return;}
     cyclus::Context* ctx = context();
@@ -171,8 +177,10 @@ void ReactorLite::Tock() {
     reactor_core_.Reorder();
     // Record the burnup of the core before cycle begins
     const float BU_prev = reactor_core_.CalcBU();
+
     // Advance fluences accordingly
     BurnFuel(reactor_core_);
+
     // Determine change in core burnup in this step
     float delta_BU = reactor_core_.CalcBU() - BU_prev;
     if(delta_BU < 0) {delta_BU = 0;}
@@ -239,10 +247,12 @@ void ReactorLite::Tock() {
     cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
     cyclus::toolkit::RecordTimeSeries("BURNUP", this, reactor_core_.region[0].CalcBU());
     cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this,  pow_per_time_);
+    */
 }
 
 // The reactor requests the amount of regions it needs
-std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRequests() {
+std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatlRequests() {
+    /*
     using cyclus::RequestPortfolio;
     using cyclus::Material;
     using cyclus::CapacityConstraint;
@@ -298,13 +308,14 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlRe
     ports.insert(port);
 
     return ports;
+    */
 }
 
 
 // Accept fuel offered
-void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
+void FuelFacilityX::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses) {
-
+/*
     if(shutdown_ != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
@@ -325,12 +336,15 @@ void ReactorLite::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cy
             }
         }
     }
+    */
 }
 
 
 // Offer materials
-std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> FuelFacilityX::GetMatlBids(
                             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
+
+/*
     // Offer either a single batch or a full core based on shutdown condition
     //std::cout << "RX GetMatBid" << std::endl;
     using cyclus::BidPortfolio;
@@ -378,11 +392,13 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorLite::GetMatlBids(
     ports.insert(port);
     //std::cout << "end getmatlbids" << std::endl;
     return ports;
+*/
 }
 
 // Discharging fuel from the reactor
-void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+void FuelFacilityX::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
         std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
+    /*
     using cyclus::Material;
     using cyclus::Trade;
     cyclus::Context* ctx = context();
@@ -395,13 +411,14 @@ void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Materia
         responses.push_back(std::make_pair(*it, discharge));
     }
     //std::cout << "RX getTRADE end" << std::endl;
+    */
 }
 
 // WARNING! Do not change the following this function!!! This enables your
 // archetype to be dynamically loaded and any alterations will cause your
 // archetype to fail.
-extern "C" cyclus::Agent* ConstructReactorLite(cyclus::Context* ctx) {
-  return new ReactorLite(ctx);
+extern "C" cyclus::Agent* ConstructFuelFacilityX(cyclus::Context* ctx) {
+  return new FuelFacilityX(ctx);
 }
 
-}  // namespace ReactorLite
+}  // namespace FuelFacilityX
