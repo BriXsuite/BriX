@@ -191,8 +191,7 @@ void ReactorLite::Tock() {
         cyclus::CompMap out_comp;
         for(std::map<int, float>::iterator c = reactor_core_.region[reg_i].comp.begin();
                                             c != reactor_core_.region[reg_i].comp.end(); ++c){
-            if(c->first % 1000 > 0){
-            } else if(c->second < 0){
+            if(c->second < 0){
                 out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
             } else {
                 out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
