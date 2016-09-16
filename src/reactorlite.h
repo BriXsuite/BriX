@@ -147,6 +147,11 @@ public:
                       "default": 3}
     int regions;
 
+    #pragma cyclus var {"tooltip": "Average cycles fuel resides in the core, leave zero if cycles is integer", \
+                      "userlevel": 1, \
+                      "default": 0}
+    float cycles;
+
     #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
                       "default": {}, \
@@ -316,6 +321,8 @@ private:
     float pow_over_ = 0;
     float outage_time_ = 0;
     float time_step_;
+    float odd_mass;                     // Non-int batches: odd region mass
+    float even_mass;                    // Non-int batches: even region mass
 
 };
 

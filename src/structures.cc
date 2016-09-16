@@ -39,7 +39,7 @@ void IsoInfo::Print(int times) {
 }
 
 void RegionInfo::Print() {
-    std::cout << "Fluence: " << fluence_ << " rFlux: " << rflux_;
+    std::cout << "Fluence: " << fluence_ << " rFlux: " << rflux_ << " mass: " << mass_;
     iso.Print();
 }
 
@@ -266,11 +266,9 @@ void ReactorLiteInfo::PrintFluences() {
     std::cout << std::endl;
 }
 
-
 // Updates the fractions of regions, builds new regions if they're empty
 void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifest) {
     unsigned const int manifest_size = manifest.size();
-
 
     if (manifest_size != regions_) {
         std::cout << "ReactorLite manifest size and region size mismatch!" << std::endl;
@@ -279,7 +277,6 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
     // Number of regions consistency check and fix
     if (manifest_size > region.size()) {
         RegionInfo new_region;
-        new_region.mass_ = core_mass_/regions_;
         for (int i = 0; i < manifest_size - region.size(); i++){
             region.push_back(new_region);
         }
@@ -293,6 +290,9 @@ void ReactorLiteInfo::UpdateFractions(std::vector<cyclus::Material::Ptr> manifes
         // Builds correct isoinfo and fraction of every isotope in each batch
         comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
         int comp_iso;
+
+        // Update mass
+        region[i].mass_ = manifest[i]->quantity();
 
         // If a region has fluence the library must already have been built
         if (region[i].fluence_ == 0) {
@@ -357,9 +357,9 @@ float ReactorLiteInfo::CalcBU() {
     unsigned const int regions = region.size();
     float total_BU = 0;
     for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
-        total_BU += region[reg_i].CalcBU();
+        total_BU += region[reg_i].CalcBU() * region[reg_i].mass_;
     }
-    return total_BU / regions;
+    return total_BU / core_mass_;
 }
 
 // Returns the burnup if the reactor at given flux; using rflux_ and fluence_timestep_
@@ -370,10 +370,10 @@ float ReactorLiteInfo::CalcBU(float flux) {
 
     for(int reg_i = 0; reg_i < regions; reg_i++) {
         fluence = region[reg_i].fluence_ + (region[reg_i].rflux_ * flux * fluence_timestep_);
-        burnup += region[reg_i].CalcBU(fluence);
+        burnup += region[reg_i].CalcBU(fluence) * region[reg_i].mass_;
     }
 
-    return burnup / regions;
+    return burnup / core_mass_;
 }
 
 

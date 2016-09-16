@@ -354,13 +354,12 @@ float kCalc(ReactorLiteInfo &core) {
     float dest_tot = 0;
 
     for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
-        prod_tot += ( (core.region[reg_i].CalcProd() +
-                       core.struct_prod_ * core.region[reg_i].DA)
-                    * core.region[reg_i].rflux_);
+        prod_tot += ( (core.region[reg_i].CalcProd() + core.struct_prod_ * core.region[reg_i].DA)
+                    * core.region[reg_i].rflux_ * core.region[reg_i].mass_);
 
         dest_tot += ( (core.region[reg_i].CalcDest() +
                        core.struct_dest_ * core.region[reg_i].DA)
-                    * core.region[reg_i].rflux_);
+                    * core.region[reg_i].rflux_) * core.region[reg_i].mass_;
     }
 
     if(dest_tot <= 0) {return 0;}

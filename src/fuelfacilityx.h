@@ -74,13 +74,13 @@ public:
 
         /** Required inputs **/
     #pragma cyclus var {"tooltip": "input commodity", \
-                      "doc": "commodity that reactor-lite consumes", \
+                      "doc": "Fuel/commodity that this facility will provide ReactorX", \
                       "schematype": "token", \
                       "uitype": ["oneOrMore", "incommodity"]}
-    std::vector<std::string> in_commods;
+    std::string in_commod;
 
-    #pragma cyclus var {"tooltip": "output commodity", \
-                      "doc": "commodity that reactor-lite supplies", \
+    #pragma cyclus var {"tooltip": "Fuel type commodity going to ReactorX", \
+                      "doc": "commodity that fuel facility supplies to reactorx", \
                       "uitype": "outcommodity", \
                       "uilabel": "Output"}
     std::string out_commod;
@@ -118,8 +118,8 @@ public:
 
     #pragma cyclus var {"default": 1e299, \
                       "userlevel": 2, \
-                      "tooltip": "reactor maximum inventory size", \
-                      "doc": "total maximum inventory size of the reactor"}
+                      "tooltip": "maximum inventory to hold,", \
+                      "doc": "total maximum inventory size of the facility. "}
     float max_inv_size;
 
 
