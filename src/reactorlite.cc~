@@ -195,7 +195,6 @@ void ReactorLite::Tock() {
                 out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
             } else {
                 out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
-                std::cout << c->first << "   " << c->second << "   " << std::endl;
             }
         }
         manifest[reg_i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
@@ -398,6 +397,7 @@ void ReactorLite::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Materia
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(storage_.Pop());
         discharge->Decay(ctx->time());
         decay_times_.erase(decay_times_.begin());
+        OutputToTerm(discharge);
         responses.push_back(std::make_pair(*it, discharge));
     }
     //std::cout << "RX getTRADE end" << std::endl;

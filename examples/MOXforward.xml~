@@ -13,11 +13,12 @@ Batches: 5
     <duration>330</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
+    <decay>never</decay>
   </control>
 
   <archetypes>
     <spec><lib>agents</lib><name>Source</name></spec>
-    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>BriX</lib><name>ReactorLite</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
@@ -104,7 +105,7 @@ Batches: 5
   <facility>
     <name>Rx</name>
     <config>
-      <ReactorFacility>
+      <ReactorLite>
         <in_commods>
             <val>freshFuel</val> 
             <val>freshFuel1</val> 
@@ -114,15 +115,14 @@ Batches: 5
             <val>freshFuel5</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>PWRMOX</val></libraries>
-        <target_burnup>0.0</target_burnup>
-        <nonleakage>0.9475</nonleakage>
-        <core_mass>100000</core_mass>
-        <generated_power>1000</generated_power>
-        <batches>5</batches>
-        <flux_mode>0</flux_mode>
-        <burnupcalc_timestep>100</burnupcalc_timestep>
-	<reactor_life>300</reactor_life>
+        <libraries><val>xsgenMOX</val></libraries>
+        <nonleakage>0.</nonleakage>
+        <core_mass>75000</core_mass>
+        <thermal_pow>3800</thermal_pow>
+        <regions>5</regions>
+        <flux_mode>1</flux_mode>
+        <DA_mode>1</DA_mode>
+	<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
@@ -137,7 +137,7 @@ Batches: 5
             <val>952420</val>
             <val>952440</val>
         </CR_fissile>
-      </ReactorFacility>
+      </ReactorLite>
     </config>
   </facility>
 
@@ -222,31 +222,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.2</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 
@@ -255,31 +255,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.3</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 
@@ -288,31 +288,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.4</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 
@@ -321,31 +321,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.5</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 
@@ -354,31 +354,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.6</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 

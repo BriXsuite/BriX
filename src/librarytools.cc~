@@ -52,11 +52,14 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
     while(getline(inf, line)){
         istringstream iss(line);
         iss >> buffer;
-        if (i >= 5){
+        if (i > 5){
             Daughter daughter;
             daughter.name = pyne::nucname::zzaaam(buffer);
             while (iss >> value){
                 daughter.mass.push_back(value);
+            }
+            while(daughter.mass.size() < temp_days.size()){
+                daughter.mass.push_back(0);
             }
             iso.iso_vector.push_back(daughter);
         } else {        
@@ -71,6 +74,7 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
                     iso.neutron_dest.push_back(value);
                 } else if (buffer == "BUd"){
                     iso.BU.push_back(value);
+                    i=5;
                 }
             }
             i++;

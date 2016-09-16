@@ -58,6 +58,9 @@ void IsoBuilder(string library_path, IsoInfo &iso) {
             while (iss >> value){
                 daughter.mass.push_back(value);
             }
+            while(daughter.mass.size() < temp_days.size()){
+                daughter.mass.push_back(0);
+            }
             iso.iso_vector.push_back(daughter);
         } else {        
             while (iss >> value){
