@@ -5,5 +5,7 @@ TAPE9.INP
 *.INP~
 *.txt~
 *.sqlite
+*.pdf
+*.*~
 build/
 src_old/
