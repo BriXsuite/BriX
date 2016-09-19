@@ -6,6 +6,7 @@ TAPE9.INP
 *.txt~
 *.sqlite
 *.pdf
-*.*~
+*~
 build/
 src_old/
+isotope_parser.py

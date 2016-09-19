@@ -33,3 +33,12 @@ void UpdateStorage(std::vector<int> &decay_times){
     for(int i = 0; i < decay_times.size(); i++){decay_times[i]++;}
     return;
 }
+
+void OutputToTerm(cyclus::Material::Ptr mat){
+    cyclus::CompMap comp;
+    cyclus::CompMap::iterator it;
+    comp = mat->comp()->mass();
+    for (it = comp.begin(); it != comp.end(); ++it){
+        std::cout << pyne::nucname::zzaaam(it->first) << "   " << it->second << std::endl;
+    }
+}

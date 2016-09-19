@@ -14,7 +14,7 @@ Test input for ReactorLite
   <archetypes>
     <spec><lib>agents</lib><name>Source</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
-    <spec><lib>BriX</lib><name>ReactorX</name></spec>
+    <spec><lib>BriX</lib><name>ReactorLite</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
   </archetypes>
@@ -25,7 +25,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-	<capacity>500000000000000</capacity>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -36,7 +36,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-	<capacity>35000000000000.0</capacity>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -47,7 +47,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-	<capacity>3500000000000.0</capacity>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -58,7 +58,7 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-	<capacity>350000000000000.0</capacity>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -69,7 +69,18 @@ Test input for ReactorLite
       <Source>
         <commod>freshFuel4</commod>
         <recipe_name>commod_recipe4</recipe_name>
-	<capacity>3500000000000000.0</capacity>
+	<capacity>20000000000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source5</name>
+    <config>
+      <Source>
+        <commod>freshFuel5</commod>
+        <recipe_name>commod_recipe5</recipe_name>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -87,25 +98,25 @@ Test input for ReactorLite
   </facility>
 
   <facility>
-    <name>BriX_ReactorX</name>
+    <name>BriX_ReactorLite</name>
     <config>
-      <ReactorX>
+      <ReactorLite>
         <in_commods>
-            <val>freshFuel</val> 
-            <val>freshFuel1</val>
-            <val>freshFuel2</val>
+            <val>freshFuel</val>  
+            <val>freshFuel1</val> 
+            <val>freshFuel2</val> 
             <val>freshFuel3</val> 
-            <val>freshFuel4</val> 
+            <val>freshFuel4</val>  
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries>
-            <val>3.5E</val>
+            <val>3.0-100</val>
         </libraries>
-	<regions>4</regions>
+	<regions>3</regions>
         <thermal_pow>4000</thermal_pow>
         <core_mass>127000</core_mass>
 	<flux_mode>1</flux_mode>
-        <nonleakage>0.96</nonleakage>
+        <nonleakage>0.85</nonleakage>
 	<DA_mode>1</DA_mode>
 	<fluence_timestep>100</fluence_timestep>
         <CR_fissile>
@@ -122,7 +133,7 @@ Test input for ReactorLite
             <val>952420</val>
             <val>952440</val>
         </CR_fissile>
-      </ReactorX>
+      </ReactorLite>
     </config>
   </facility>
 
@@ -133,7 +144,7 @@ Test input for ReactorLite
       <name>SingleInstitution</name>
       <initialfacilitylist>    
         <entry>
-          <prototype>BriX_ReactorX</prototype>
+          <prototype>BriX_ReactorLite</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -143,7 +154,7 @@ Test input for ReactorLite
         <entry>
           <prototype>Source1</prototype>
           <number>1</number>
-        </entry> 
+        </entry>
         <entry>
           <prototype>Source2</prototype>
           <number>1</number>
@@ -170,11 +181,11 @@ Test input for ReactorLite
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.6</comp>
+      <comp>3.1</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.4</comp>
+      <comp>96.9</comp>
     </nuclide>
   </recipe>
   
@@ -229,5 +240,4 @@ Test input for ReactorLite
       <comp>96.9</comp>
     </nuclide>
   </recipe>
-
 </simulation>
