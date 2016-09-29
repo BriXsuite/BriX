@@ -24,9 +24,11 @@ public:
     std::vector<float> neutron_prod;
     std::vector<float> neutron_dest;
     std::vector<float> BU;      //total BU
+    std::vector<float> CR;
     std::vector<float> fission_products; // Fission product lump mass
     std::vector<Daughter> iso_vector;
 
+    void BuildCRVector(std::vector<int> fissile_isos);
     void Print(int times = 5);
 };
 
@@ -88,6 +90,12 @@ struct LibInfo {
     float fraction;        // Fraction of this library in core region
 };
 
+// Used by the blender to determine constraint targets and types
+struct BlendInfo {
+    std::string type;
+    float target;
+};
+
 // Information about the fuel region
 class RegionInfo {
 public:
@@ -115,6 +123,11 @@ public:
     float CalcDest(float fluence);  // Return the neutron destruction at given fluence
     float CalcNuSigf();             // Return the macroscopic fission cross section [cm-1] times nu
     float CalcSiga();               // Return the macroscopic absorption cross section [cm-1]
+    float CalcCR();
+    float CalcCR(float fluence);
+    std::map<int, float> FindComp(float fluence);
+    std::map<int, float> InitComp();
+    std::map<int, float> CompDiff(float fluence);
 };
 
 class ReactorLiteInfo {

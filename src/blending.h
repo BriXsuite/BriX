@@ -1,9 +1,10 @@
-#ifndef STRUCTURES_H_INCLUDED
-#define STRUCTURES_H_INCLUDED
+#ifndef BLENDING_H_INCLUDED
+#define BLENDING_H_INCLUDED
 
 #include <utility>
 #include "generaltools.h"
 #include "cyclus.h"
+#include "structures.h"
 
 #include <string>
 #include <cmath>
@@ -12,4 +13,4 @@
 
 
 
-#endif // STRUCTURES_H_INCLUDED
+#endif // BLENDING_H_INCLUDED

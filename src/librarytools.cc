@@ -324,6 +324,49 @@ void CriticalityBurn(ReactorLiteInfo &core) {
 
 }
 
+
+// Burns the fuel by advancing fluence to reach a certain CR
+void CRBurn(ReactorLiteInfo &core, double target) {
+    float cr;
+    unsigned const int regions = core.region.size();
+    float abs_flux = core.base_flux_;
+
+    while((cr - target)/target >  core.SS_tol_) {
+        FluxCalc(core); // Update relative flux of regions
+
+        // Calculate DA
+        if(core.DA_mode_ == 1) {
+            DACalc(core);
+        }
+
+        abs_flux = AbsFluxCalc(core, abs_flux);
+        //std::cout << "Absolute flux: " << abs_flux << std::endl;
+
+        // Update fluences
+        for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
+            core.region[reg_i].fluence_ += core.region[reg_i].rflux_
+                    * core.fluence_timestep_ * abs_flux;
+        }
+
+        // Calculate k
+        float kcore = kCalc(core);
+        if(kcore < 1.0){std::cout << "Warning, core is subcritical before CR target met. Fuel will discharge at CR " << cr << std::endl;}
+        //std::cout << "k: " << kcore << " BU: " << core.region[0].CalcBU() << " CR: " << CoreCRCalc(core) << std::endl;
+        cr = core.region[0].CalcCR(core.region[0].fluence_);
+    }
+
+    // Update base_flux_ for next time
+    core.base_flux_ = abs_flux;
+
+    // Find the discharge fluences
+    /*for(unsigned int reg_i = 0; reg_i < regions; reg_i++) {
+        ///The subtraction here is meh
+        core.region[reg_i].fluence_ = Interpolate((core.region[reg_i].fluence_ -
+                   core.region[reg_i].rflux_ * core.fluence_timestep_ * abs_flux),
+                   core.region[reg_i].fluence_, kcore_prev, cr, target);
+    }*/
+}
+
 // Determines the flux calculation method and calls flux function accordingly
 void FluxCalc(ReactorLiteInfo &core) {
     unsigned int mode = core.flux_mode_;

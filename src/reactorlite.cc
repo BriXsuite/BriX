@@ -78,7 +78,7 @@ void ReactorLite::Tick() {
     reactor_core_.cycles_ = cycles;
     reactor_core_.thermal_pow_ = thermal_pow;
     reactor_core_.core_mass_ = core_mass;
-    reactor_core_.target_BU_ = target_burnup;
+    reactor_core_.target_BU_ = target_burnup;	
     reactor_core_.target_CR_ = target_CR;
     reactor_core_.pnl = nonleakage;
     reactor_core_.fluence_timestep_ = fluence_timestep * 86400;
@@ -269,8 +269,8 @@ void ReactorLite::Tock() {
         std::cout << ctx->time() << " Agent " << id() << " shutdown after " << refuels_ << " cycles. Core CR: " << reactor_core_.CR_ << "  BU's: " << std::endl;
          for(int i = 0; i < reactor_core_.region.size(); i++){
             const float burnup = reactor_core_.region[i].CalcBU();
-
-            std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << std::endl;
+            const float cr = reactor_core_.region[i].CalcCR();
+            std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << " and CR:" << cr << std::endl;
             cyclus::toolkit::RecordTimeSeries("CR", this, reactor_core_.CR_);
             cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
          }
@@ -280,7 +280,7 @@ void ReactorLite::Tock() {
 
     if(shutdown_ != true) {
         std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4)
-                << reactor_core_.region[0].CalcBU() //TODO << "  Batch CR: " << reactor_core_.region[0].CR_
+                << reactor_core_.region[0].CalcBU() << "  Batch CR: " << reactor_core_.region[0].CalcCR()
                 << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
         if(cycles != 0) {
         std::cout << "   2nd region BU: "  << std::setprecision(4)

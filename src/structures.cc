@@ -125,6 +125,36 @@ void RegionInfo::BuildIso(LibInfo library) {
     }
 }
 
+void IsoInfo::BuildCRVector(std::vector<int> fissile_isos) {
+    float cr;
+    double delta_fiss = 0;
+    double delta_fp = 0;
+    CR.push_back(0.);
+    for(unsigned int f = 1; f < fluence.size(); f++){ 
+        for(unsigned int nuc = 0; nuc < iso_vector.size(); nuc++) {
+            unsigned int zzaaa = iso_vector[nuc].name;
+            unsigned int zz = zzaaa % 100000;
+            if(zz > 20 && zz < 80){
+                delta_fp += iso_vector[nuc].mass[f] - iso_vector[nuc].mass[0];
+            } else if (zz >= 80){
+                for(unsigned int j = 0; j < fissile_isos.size(); j++){
+                    if (fissile_isos[j] == zzaaa){
+                        delta_fiss += iso_vector[nuc].mass[f] - iso_vector[nuc].mass[0];
+                    }
+                } 
+            }   
+        }
+        if(delta_fp >= 0){
+            CR.push_back((delta_fp+delta_fiss)/delta_fp);
+        } else {
+            CR.push_back(0.);
+        }       
+        delta_fp = 0.;
+        delta_fiss = 0.;
+    }
+    return;    
+}
+
 // Determines the composition of the given isotope at region fluence
 void RegionInfo::UpdateComp() {
     if(fluence_ <= 0) {return;}
@@ -147,6 +177,51 @@ void RegionInfo::UpdateComp() {
     }
 }
 
+// Determines the composition of a region at a specific fluence. 
+std::map<int, float> RegionInfo::FindComp(float fluence) {
+    std::map<int, float> temp_comp;
+    if(fluence <= 0) {return temp_comp;}
+    if(fluence >= iso.fluence.back()) {
+        std::cout << " Warning! Region fluence exceeds library range in composition calculation!"
+                << " Composition will not be updated." << std::endl;
+        return temp_comp;
+    }
+
+    unsigned int ii;
+
+    for(ii = 1; iso.fluence[ii] <= fluence; ii++){}
+
+    // Finds the interpolation slope to use for faster interpolation
+    const double slope = (fluence - iso.fluence[ii-1]) / (iso.fluence[ii] - iso.fluence[ii-1]);
+
+    for(int iso_i = 0; iso_i < iso.iso_vector.size(); iso_i++) {
+        temp_comp[iso.iso_vector[iso_i].name] = (iso.iso_vector[iso_i].mass[ii-1] +
+                (iso.iso_vector[iso_i].mass[ii] - iso.iso_vector[iso_i].mass[ii-1]) * slope) / 1000;
+    }
+    return temp_comp;
+}
+
+// Determines the composition of a region at initial loading. 
+std::map<int, float> RegionInfo::InitComp() {
+    std::map<int, float> temp_comp;
+    for(int iso_i = 0; iso_i < iso.iso_vector.size(); iso_i++) {
+        temp_comp[iso.iso_vector[iso_i].name] = iso.iso_vector[iso_i].mass[0];
+    }
+    return temp_comp;
+}
+
+// Determines the difference between to init and current composition of the region.
+std::map<int, float> RegionInfo::CompDiff(float fluence) {
+    std::map<int, float> diff_comp;
+    std::map<int, float> init_comp = InitComp();
+    std::map<int, float> temp_comp = FindComp(fluence);
+    for(unsigned int i = 0; i < iso.iso_vector.size(); i++){
+        unsigned int zz = iso.iso_vector[i].name;
+        diff_comp[zz] = temp_comp[zz] - init_comp[zz];             
+    }
+    return diff_comp;
+}
+
 // Determines the burnup/mass of the region based on the region fluence
 float RegionInfo::CalcBU() {
     return CalcBU(fluence_);
@@ -156,16 +231,34 @@ float RegionInfo::CalcBU() {
 float RegionInfo::CalcBU(float fluence) {
     if(fluence <= 0) {return 0;}
     if(fluence >= iso.fluence.back()) {return iso.BU.back();}
-
     unsigned int ii;
     float burnup;
-
+    
     for(ii = 1; iso.fluence[ii] <= fluence; ii++){}
 
     burnup = Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence);
     if(burnup < 0) {return 0;}
     return burnup;
 }
+
+float RegionInfo::CalcCR() {
+    return CalcCR(fluence_);
+}
+
+/** Finds the conversion ratio (based on user inputted isotopes) of the entire core **/
+float RegionInfo::CalcCR(float fluence) {
+    if(fluence <= 0) {return 0;}
+    if(fluence >= iso.fluence.back()) {return iso.CR.back();}
+    unsigned int ii;
+    float cr;
+    
+    for(ii = 1; iso.fluence[ii] <= fluence; ii++){}
+
+    cr = Interpolate(iso.BU[ii-1], iso.BU[ii], iso.fluence[ii-1], iso.fluence[ii], fluence);
+    if(cr < 0) {return 0;} 
+    return cr;
+}
+
 
 // Determines the neutron production of the region based on region fluence
 float RegionInfo::CalcProd() {
