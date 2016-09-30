@@ -16,8 +16,4 @@ void burnup_blend(){
 
 }
 
-std::vector<std::map<std::string, double>> blend_fuel(){
-    
-}
-
 
